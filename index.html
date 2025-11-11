@@ -4,13 +4,91 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Línea de Tiempo Facturación</title>
+<style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f7f9fb;
+        margin: 0;
+        padding: 40px;
+      }
+      h1 {
+        text-align: center;
+        color: #0072bb;
+      }
+      .timeline {
+        position: relative;
+        margin: 40px auto;
+        max-width: 800px;
+      }
+      .timeline::after {
+        content: '';
+        position: absolute;
+        width: 4px;
+        background-color: #7cc242;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        margin-left: -2px;
+      }
+      .container {
+        padding: 10px 40px;
+        position: relative;
+        background-color: inherit;
+        width: 50%;
+      }
+      .left {
+        left: 0;
+      }
+      .right {
+        left: 50%;
+      }
+      .content {
+        padding: 15px 25px;
+        background-color: white;
+        position: relative;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      }
+      .date {
+        font-weight: bold;
+        color: #0072bb;
+      }
+      @media screen and (max-width: 600px) {
+        .container {
+          width: 100%;
+          left: 0 !important;
+        }
+        .timeline::after {
+          left: 20px;
+        }
+      }
+</style>
 </head>
 <body>
-<div id="root"></div>
-<script type="module">
-      import App from "./src/App.js";
-      const root = document.getElementById("root");
-      root.innerHTML = App().outerHTML;
+<h1>📘 Línea de Tiempo de Facturación</h1>
+<div class="timeline" id="timeline"></div>
+ 
+    <script>
+      const eventos = [
+        { fecha: '2023-04-01', titulo: 'Inicio de Facturación Electrónica', descripcion: 'Se implementa el nuevo proveedor de facturación electrónica.' },
+        { fecha: '2024-02-15', titulo: 'Error en Sistema Externo', descripcion: 'Falla del sistema de emisión que afectó temporalmente el ciclo.' },
+        { fecha: '2025-01-10', titulo: 'Automatización de Reintentos', descripcion: 'Se automatiza el flujo de reintentos para mejorar eficiencia.' },
+      ];
+ 
+      const timeline = document.getElementById('timeline');
+ 
+      eventos.forEach((e, i) => {
+        const container = document.createElement('div');
+        container.className = `container ${i % 2 === 0 ? 'left' : 'right'}`;
+        container.innerHTML = `
+<div class="content">
+<div class="date">${new Date(e.fecha).getFullYear()}</div>
+<h3>${e.titulo}</h3>
+<p>${e.descripcion}</p>
+</div>
+        `;
+        timeline.appendChild(container);
+      });
 </script>
 </body>
 </html>
