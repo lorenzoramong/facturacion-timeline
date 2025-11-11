@@ -12,21 +12,72 @@
         color: #222;
       }
  
-      /* ---- Encabezado ---- */
-      header {
-        text-align: center;
-        padding: 40px 20px 10px;
-        border-bottom: 1px solid #e3eaf0;
+      /* ---- Encabezado animado ---- */
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        gap: 16px;
+        padding: 60px 20px 40px;
         background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
+        border-bottom: 1px solid #e3eaf0;
       }
-      header h1 {
+ 
+      .hero-icon {
+        position: relative;
+        width: 50px;
+        height: 50px;
+      }
+ 
+      .hero-square {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0072bb, #7cc242);
+        border-radius: 12px;
+        animation: float 3s ease-in-out infinite;
+      }
+ 
+      .hero-line {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(180deg, #7cc242, #0072bb);
+        border-radius: 2px;
+        opacity: 0.8;
+      }
+ 
+      .hero-text h1 {
+        font-size: 2.3rem;
+        font-weight: 700;
         color: #0072bb;
-        margin-bottom: 4px;
+        margin: 0;
+        letter-spacing: -0.5px;
       }
-      header p {
-        color: #555;
-        margin-top: 0;
-        font-size: 0.95rem;
+ 
+      .hero-text p {
+        font-size: 1rem;
+        color: #4a4a4a;
+        margin-top: 6px;
+        letter-spacing: 0.2px;
+      }
+ 
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+ 
+      @media (max-width: 768px) {
+        .hero {
+          flex-direction: column;
+          text-align: center;
+        }
+        .hero-icon {
+          margin-bottom: 12px;
+        }
       }
  
       /* ---- Línea principal ---- */
@@ -132,9 +183,16 @@
 </head>
  
   <body>
-<header>
+<!-- Encabezado animado -->
+<header class="hero">
+<div class="hero-icon">
+<div class="hero-square"></div>
+<div class="hero-line"></div>
+</div>
+<div class="hero-text">
 <h1>Línea de Tiempo de Facturación</h1>
 <p>Explorá los hitos más importantes por año</p>
+</div>
 </header>
  
     <!-- Línea principal de años -->
@@ -144,7 +202,7 @@
 <div class="year-node" data-year="2025">2025</div>
 </section>
  
-    <!-- Contenedores de sub-líneas -->
+    <!-- Sub-líneas -->
 <section class="year-details" id="details-2023">
 <div class="events-line"></div>
 <div class="event">
@@ -164,7 +222,7 @@
 <div class="event">
 <div class="date">Septiembre 2024</div>
 <h3>Actualización de Plantillas</h3>
-<p>Se rediseñan los formatos de factura y reporte interno.</p>
+<p>Rediseño de formatos de factura y reportes internos.</p>
 </div>
 </section>
  
@@ -190,7 +248,7 @@
         node.addEventListener("click", () => {
           const year = node.dataset.year;
  
-          // Quitar activos previos
+          // Limpiar estados previos
           nodes.forEach(n => n.classList.remove("active"));
           details.forEach(d => d.classList.remove("active"));
  
@@ -198,7 +256,7 @@
           node.classList.add("active");
           document.getElementById("details-" + year).classList.add("active");
  
-          // Hacer scroll suave hasta esa sección
+          // Scroll suave
           document.getElementById("details-" + year)
             .scrollIntoView({ behavior: "smooth", block: "start" });
         });
