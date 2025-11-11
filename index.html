@@ -3,209 +3,206 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Línea de Tiempo Interactiva</title>
+<title>Línea de Tiempo de Facturación</title>
 <style>
       body {
         margin: 0;
         font-family: "Inter", system-ui, sans-serif;
-        background-color: #ffffff;
-        overflow: hidden;
-        user-select: none;
+        background: #fff;
+        color: #222;
       }
  
       /* ---- Encabezado ---- */
-      .hero {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
+      header {
+        text-align: center;
+        padding: 40px 20px 10px;
+        border-bottom: 1px solid #e3eaf0;
+        background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
+      }
+      header h1 {
+        color: #0072bb;
+        margin-bottom: 4px;
+      }
+      header p {
+        color: #555;
+        margin-top: 0;
+        font-size: 0.95rem;
+      }
+ 
+      /* ---- Línea principal ---- */
+      .main-timeline {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 80px;
+        position: relative;
+        margin: 80px auto;
+        padding: 0 40px;
+        max-width: 1000px;
+      }
+      .main-timeline::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 5%;
+        right: 5%;
+        height: 4px;
+        background: linear-gradient(90deg, #0072bb, #7cc242);
+        z-index: 0;
+      }
+ 
+      .year-node {
+        position: relative;
+        background: #fff;
+        border: 4px solid #0072bb;
+        border-radius: 50%;
+        width: 70px;
+        height: 70px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 16px;
-        padding: 20px;
-        background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
-        border-bottom: 1px solid #e3eaf0;
-        z-index: 10;
-      }
- 
-      .hero-square {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #0072bb, #7cc242);
-        border-radius: 10px;
-        animation: float 3s ease-in-out infinite;
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-      }
- 
-      .hero-text h1 {
-        font-size: 1.7rem;
+        font-weight: bold;
         color: #0072bb;
-        margin: 0;
+        cursor: pointer;
+        z-index: 1;
+        transition: transform 0.25s, background 0.25s, color 0.25s;
       }
-      .hero-text p {
-        color: #555;
-        font-size: 0.9rem;
-        margin: 2px 0 0;
+      .year-node:hover {
+        background: #0072bb;
+        color: #fff;
+        transform: scale(1.1);
       }
- 
-      /* ---- Área interactiva ---- */
-      #viewport {
-        position: absolute;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        height: calc(100vh - 80px);
-        overflow: hidden;
-        background: radial-gradient(circle at center, #fafafa, #f0f4f8);
-        touch-action: none; /* <-- clave para Panzoom */
+      .year-node.active {
+        background: #7cc242;
+        color: #fff;
+        border-color: #7cc242;
       }
  
-      #canvas {
-        width: 2600px;
-        height: 1400px;
+      /* ---- Sub-línea (eventos por año) ---- */
+      .year-details {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        margin: 30px 0 60px;
+      }
+      .year-details.active {
+        display: flex;
+        animation: fadeIn 0.5s ease;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+ 
+      .events-line {
         position: relative;
-        transform-origin: 0 0;
+        width: 4px;
+        background: #0072bb40;
+        height: 100%;
+        margin: 0 auto;
       }
  
-      /* ---- Eventos ---- */
       .event {
-        position: absolute;
-        background: white;
-        border: 2px solid #0072bb20;
+        position: relative;
+        background: #f9f9f9;
         border-left: 6px solid #0072bb;
-        border-radius: 10px;
-        padding: 16px;
-        width: 260px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 8px;
+        padding: 15px 20px;
+        width: 300px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        margin: 25px 0;
       }
- 
-      .event:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+      .event .date {
+        color: #7cc242;
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
       }
- 
       .event h3 {
-        margin: 0 0 8px;
+        margin: 4px 0 6px;
         color: #0072bb;
+        font-size: 1.1rem;
       }
- 
       .event p {
         margin: 0;
         color: #444;
         font-size: 0.9rem;
       }
- 
-      .fecha {
-        font-size: 0.85rem;
-        color: #7cc242;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
- 
-      /* ---- Controles ---- */
-      .controls {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        display: flex;
-        gap: 10px;
-        z-index: 20;
-      }
- 
-      .btn {
-        background: #0072bb;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 10px 14px;
-        font-size: 16px;
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      }
- 
-      .btn:hover {
-        background: #005a99;
-      }
 </style>
 </head>
  
   <body>
-<!-- Encabezado -->
-<header class="hero">
-<div class="hero-square"></div>
-<div class="hero-text">
+<header>
 <h1>Línea de Tiempo de Facturación</h1>
-<p>Explorá la historia interactiva del proceso de facturación</p>
-</div>
+<p>Explorá los hitos más importantes por año</p>
 </header>
  
-    <!-- Área interactiva -->
-<div id="viewport">
-<div id="canvas"></div>
-</div>
+    <!-- Línea principal de años -->
+<section class="main-timeline" id="timeline">
+<div class="year-node" data-year="2023">2023</div>
+<div class="year-node" data-year="2024">2024</div>
+<div class="year-node" data-year="2025">2025</div>
+</section>
  
-    <!-- Controles -->
-<div class="controls">
-<button class="btn" id="zoomIn">+</button>
-<button class="btn" id="zoomOut">−</button>
-<button class="btn" id="reset">↺</button>
+    <!-- Contenedores de sub-líneas -->
+<section class="year-details" id="details-2023">
+<div class="events-line"></div>
+<div class="event">
+<div class="date">Abril 2023</div>
+<h3>Inicio de Facturación Electrónica</h3>
+<p>Implementación del nuevo proveedor de facturación electrónica.</p>
 </div>
+</section>
  
-    <!-- Panzoom -->
-<script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.3/dist/panzoom.min.js"></script>
+    <section class="year-details" id="details-2024">
+<div class="events-line"></div>
+<div class="event">
+<div class="date">Febrero 2024</div>
+<h3>Error en Sistema Externo</h3>
+<p>Falla del sistema de emisión que afectó temporalmente el ciclo.</p>
+</div>
+<div class="event">
+<div class="date">Septiembre 2024</div>
+<h3>Actualización de Plantillas</h3>
+<p>Se rediseñan los formatos de factura y reporte interno.</p>
+</div>
+</section>
+ 
+    <section class="year-details" id="details-2025">
+<div class="events-line"></div>
+<div class="event">
+<div class="date">Enero 2025</div>
+<h3>Automatización de Reintentos</h3>
+<p>Automatización del flujo de reintentos para mejorar la eficiencia.</p>
+</div>
+<div class="event">
+<div class="date">Agosto 2025</div>
+<h3>Migración al Nuevo Servidor</h3>
+<p>Cambio de infraestructura hacia un entorno más estable y rápido.</p>
+</div>
+</section>
  
     <script>
-      const eventos = [
-        { fecha: "2023-04-01", titulo: "Inicio de Facturación Electrónica", descripcion: "Implementación del nuevo proveedor de facturación electrónica.", x: 300, y: 600 },
-        { fecha: "2024-02-15", titulo: "Error en Sistema Externo", descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.", x: 900, y: 500 },
-        { fecha: "2025-01-10", titulo: "Automatización de Reintentos", descripcion: "Automatización del flujo de reintentos para mejorar eficiencia.", x: 1500, y: 750 },
-        { fecha: "2025-08-05", titulo: "Migración al Nuevo Servidor", descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.", x: 2100, y: 600 },
-      ];
+      const nodes = document.querySelectorAll(".year-node");
+      const details = document.querySelectorAll(".year-details");
  
-      const canvas = document.getElementById("canvas");
-      eventos.forEach((e) => {
-        const el = document.createElement("div");
-        el.classList.add("event");
-        el.style.left = e.x + "px";
-        el.style.top = e.y + "px";
-        el.innerHTML = `
-<div class="fecha">${new Date(e.fecha).getFullYear()}</div>
-<h3>${e.titulo}</h3>
-<p>${e.descripcion}</p>
-        `;
-        canvas.appendChild(el);
+      nodes.forEach(node => {
+        node.addEventListener("click", () => {
+          const year = node.dataset.year;
+ 
+          // Quitar activos previos
+          nodes.forEach(n => n.classList.remove("active"));
+          details.forEach(d => d.classList.remove("active"));
+ 
+          // Activar el año seleccionado
+          node.classList.add("active");
+          document.getElementById("details-" + year).classList.add("active");
+ 
+          // Hacer scroll suave hasta esa sección
+          document.getElementById("details-" + year)
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        });
       });
- 
-      // Inicializar Panzoom sobre el CANVAS
-      const viewport = document.getElementById("viewport");
-      const panzoom = Panzoom(canvas, {
-        maxScale: 3,
-        minScale: 0.4,
-        contain: "outside",
-        cursor: "grab",
-        step: 0.3,
-      });
- 
-      // Permitir zoom con rueda del mouse
-      viewport.addEventListener("wheel", panzoom.zoomWithWheel, { passive: false });
- 
-      // Cambio de cursor al arrastrar
-      viewport.addEventListener("mousedown", () => (canvas.style.cursor = "grabbing"));
-      viewport.addEventListener("mouseup", () => (canvas.style.cursor = "grab"));
- 
-      // Botones
-      document.getElementById("zoomIn").onclick = () => panzoom.zoomIn();
-      document.getElementById("zoomOut").onclick = () => panzoom.zoomOut();
-      document.getElementById("reset").onclick = () => panzoom.reset();
- 
-      // Posición inicial centrada
-      panzoom.zoom(0.9);
-      panzoom.pan(-600, -400);
 </script>
 </body>
 </html>
