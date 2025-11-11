@@ -5,32 +5,87 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Línea de Tiempo de Facturación</title>
 <style>
-      /* Estilos generales */
+      /* ---- ESTILO GLOBAL ---- */
       body {
         margin: 0;
-        font-family: "Inter", sans-serif;
+        font-family: "Inter", system-ui, sans-serif;
         background-color: #ffffff;
         color: #222;
       }
  
-      header {
-        text-align: center;
-        padding: 40px 20px 10px;
+      /* ---- ENCABEZADO MODERNO ---- */
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        gap: 16px;
+        padding: 60px 20px 40px;
+        background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
+        border-bottom: 1px solid #e3eaf0;
       }
  
-      h1 {
+      .hero-icon {
+        position: relative;
+        width: 50px;
+        height: 50px;
+      }
+ 
+      .hero-square {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0072bb, #7cc242);
+        border-radius: 12px;
+        animation: float 3s ease-in-out infinite;
+      }
+ 
+      .hero-line {
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(180deg, #7cc242, #0072bb);
+        border-radius: 2px;
+        opacity: 0.8;
+      }
+ 
+      .hero-text h1 {
+        font-size: 2.3rem;
+        font-weight: 700;
         color: #0072bb;
-        font-size: 2.2rem;
-        margin-bottom: 0.2rem;
+        margin: 0;
+        letter-spacing: -0.5px;
       }
  
-      p.subtitle {
-        color: #666;
+      .hero-text p {
         font-size: 1rem;
-        margin-top: 0;
+        color: #4a4a4a;
+        margin-top: 6px;
+        letter-spacing: 0.2px;
       }
  
-      /* Contenedor principal */
+      @keyframes float {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+ 
+      @media (max-width: 768px) {
+        .hero {
+          flex-direction: column;
+          text-align: center;
+        }
+        .hero-icon {
+          margin-bottom: 12px;
+        }
+      }
+ 
+      /* ---- CONTENEDOR DE LÍNEA DE TIEMPO ---- */
       .timeline-container {
         position: relative;
         max-width: 1000px;
@@ -156,45 +211,54 @@
       }
 </style>
 </head>
-<body>
-<header>
-<h1>📘 Línea de Tiempo de Facturación</h1>
-<p class="subtitle">Historia y evolución del proceso de facturación</p>
+ 
+  <body>
+<!-- ENCABEZADO -->
+<header class="hero">
+<div class="hero-icon">
+<div class="hero-square"></div>
+<div class="hero-line"></div>
+</div>
+<div class="hero-text">
+<h1>Línea de Tiempo de Facturación</h1>
+<p>Historia y evolución del proceso de facturación</p>
+</div>
 </header>
  
-    <main class="timeline-container">
+    <!-- LÍNEA DE TIEMPO -->
+<main class="timeline-container">
 <div class="timeline-line"></div>
 <div id="timeline"></div>
 </main>
  
     <script>
-      // Datos simulados (después los conectamos con Google Sheets)
+      // Eventos simulados
       const eventos = [
         {
           fecha: "2023-04-01",
           titulo: "Inicio de Facturación Electrónica",
-          descripcion: "Se implementa el nuevo proveedor de facturación electrónica.",
+          descripcion: "Implementación del nuevo proveedor de facturación electrónica.",
         },
         {
           fecha: "2024-02-15",
           titulo: "Error en Sistema Externo",
-          descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.",
+          descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo de facturación.",
         },
         {
           fecha: "2025-01-10",
           titulo: "Automatización de Reintentos",
-          descripcion: "Se automatiza el flujo de reintentos para mejorar eficiencia.",
+          descripcion: "Se automatiza el flujo de reintentos para mejorar la eficiencia operativa.",
         },
         {
           fecha: "2025-08-05",
-          titulo: "Migración al nuevo servidor",
-          descripcion: "Cambio de infraestructura a un entorno más estable.",
+          titulo: "Migración al Nuevo Servidor",
+          descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.",
         },
       ];
  
       const timeline = document.getElementById("timeline");
  
-      // Crear los elementos
+      // Crear elementos dinámicos
       eventos.forEach((e, i) => {
         const item = document.createElement("div");
         item.className = `timeline-item ${i % 2 === 0 ? "left" : "right"} fade-in`;
@@ -212,7 +276,7 @@
         timeline.appendChild(item);
       });
  
-      // Animación al hacer scroll (scroll reveal)
+      // Efecto de aparición con scroll
       function revealOnScroll() {
         const items = document.querySelectorAll(".fade-in");
         items.forEach((el) => {
