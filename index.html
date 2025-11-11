@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CAMINO GDC</title>
+<title>Línea de Tiempo de Facturación</title>
 <style>
       body {
         margin: 0;
@@ -12,7 +12,7 @@
         color: #222;
       }
  
-      /* ---- Encabezado animado ---- */
+      /* ---- Encabezado con logo flotante ---- */
       .hero {
         display: flex;
         align-items: center;
@@ -26,15 +26,14 @@
  
       .hero-icon {
         position: relative;
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
       }
  
-      .hero-square {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #0072bb, #7cc242);
-        border-radius: 12px;
+      .hero-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
         animation: float 3s ease-in-out infinite;
       }
  
@@ -183,15 +182,15 @@
 </head>
  
   <body>
-<!-- Encabezado animado -->
+<!-- Encabezado con logo flotante -->
 <header class="hero">
 <div class="hero-icon">
-<div class="hero-square"></div>
+<img src="logo-gases.png" alt="Gases del Caribe" class="hero-logo" />
 <div class="hero-line"></div>
 </div>
 <div class="hero-text">
-<h1>CAMINO GDC</h1>
-<p>Explora los hitos más importantes por año</p>
+<h1>Línea de Tiempo de Facturación</h1>
+<p>Explorá los hitos más importantes por año</p>
 </div>
 </header>
  
@@ -248,7 +247,7 @@
         node.addEventListener("click", () => {
           const year = node.dataset.year;
  
-          // Limpiar estados previos
+          // Limpiar activos previos
           nodes.forEach(n => n.classList.remove("active"));
           details.forEach(d => d.classList.remove("active"));
  
@@ -256,7 +255,7 @@
           node.classList.add("active");
           document.getElementById("details-" + year).classList.add("active");
  
-          // Scroll suave
+          // Scroll suave hasta la sección
           document.getElementById("details-" + year)
             .scrollIntoView({ behavior: "smooth", block: "start" });
         });
