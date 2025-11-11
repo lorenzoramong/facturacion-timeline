@@ -8,14 +8,16 @@
       body {
         margin: 0;
         font-family: "Inter", system-ui, sans-serif;
-        background-color: #fff;
+        background-color: #ffffff;
         overflow: hidden;
+        user-select: none;
       }
  
       /* ---- Encabezado ---- */
       .hero {
         position: fixed;
         top: 0;
+        left: 0;
         width: 100%;
         display: flex;
         align-items: center;
@@ -38,6 +40,7 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-5px); }
       }
+ 
       .hero-text h1 {
         font-size: 1.7rem;
         color: #0072bb;
@@ -52,19 +55,23 @@
       /* ---- Área interactiva ---- */
       #viewport {
         position: absolute;
-        top: 90px; /* deja espacio para el header */
+        top: 80px;
         left: 0;
         width: 100vw;
-        height: calc(100vh - 90px);
+        height: calc(100vh - 80px);
         overflow: hidden;
         background: radial-gradient(circle at center, #fafafa, #f0f4f8);
-      }
-      #canvas {
-        width: 3000px;
-        height: 2000px;
-        position: relative;
+        touch-action: none; /* <-- clave para Panzoom */
       }
  
+      #canvas {
+        width: 2600px;
+        height: 1400px;
+        position: relative;
+        transform-origin: 0 0;
+      }
+ 
+      /* ---- Eventos ---- */
       .event {
         position: absolute;
         background: white;
@@ -76,19 +83,23 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
+ 
       .event:hover {
         transform: scale(1.05);
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
       }
+ 
       .event h3 {
         margin: 0 0 8px;
         color: #0072bb;
       }
+ 
       .event p {
         margin: 0;
         color: #444;
         font-size: 0.9rem;
       }
+ 
       .fecha {
         font-size: 0.85rem;
         color: #7cc242;
@@ -105,6 +116,7 @@
         gap: 10px;
         z-index: 20;
       }
+ 
       .btn {
         background: #0072bb;
         color: #fff;
@@ -115,10 +127,15 @@
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
-      .btn:hover { background: #005a99; }
+ 
+      .btn:hover {
+        background: #005a99;
+      }
 </style>
 </head>
-<body>
+ 
+  <body>
+<!-- Encabezado -->
 <header class="hero">
 <div class="hero-square"></div>
 <div class="hero-text">
@@ -127,11 +144,13 @@
 </div>
 </header>
  
-    <div id="viewport">
+    <!-- Área interactiva -->
+<div id="viewport">
 <div id="canvas"></div>
 </div>
  
-    <div class="controls">
+    <!-- Controles -->
+<div class="controls">
 <button class="btn" id="zoomIn">+</button>
 <button class="btn" id="zoomOut">−</button>
 <button class="btn" id="reset">↺</button>
@@ -141,18 +160,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.3/dist/panzoom.min.js"></script>
  
     <script>
-      // Datos de ejemplo
       const eventos = [
-        { fecha: "2023-04-01", titulo: "Inicio de Facturación Electrónica", descripcion: "Implementación del nuevo proveedor de facturación electrónica.", x: 400, y: 800 },
-        { fecha: "2024-02-15", titulo: "Error en Sistema Externo", descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.", x: 900, y: 600 },
-        { fecha: "2025-01-10", titulo: "Automatización de Reintentos", descripcion: "Automatización del flujo de reintentos para mejorar eficiencia.", x: 1500, y: 950 },
-        { fecha: "2025-08-05", titulo: "Migración al Nuevo Servidor", descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.", x: 2200, y: 700 },
+        { fecha: "2023-04-01", titulo: "Inicio de Facturación Electrónica", descripcion: "Implementación del nuevo proveedor de facturación electrónica.", x: 300, y: 600 },
+        { fecha: "2024-02-15", titulo: "Error en Sistema Externo", descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.", x: 900, y: 500 },
+        { fecha: "2025-01-10", titulo: "Automatización de Reintentos", descripcion: "Automatización del flujo de reintentos para mejorar eficiencia.", x: 1500, y: 750 },
+        { fecha: "2025-08-05", titulo: "Migración al Nuevo Servidor", descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.", x: 2100, y: 600 },
       ];
  
       const canvas = document.getElementById("canvas");
- 
-      // Crear eventos
-      eventos.forEach(e => {
+      eventos.forEach((e) => {
         const el = document.createElement("div");
         el.classList.add("event");
         el.style.left = e.x + "px";
@@ -165,29 +181,31 @@
         canvas.appendChild(el);
       });
  
-      // Inicializar Panzoom
+      // Inicializar Panzoom sobre el CANVAS
       const viewport = document.getElementById("viewport");
       const panzoom = Panzoom(canvas, {
         maxScale: 3,
         minScale: 0.4,
+        contain: "outside",
+        cursor: "grab",
         step: 0.3,
-        contain: 'outside',
-        cursor: 'grab'
       });
  
-      // Habilitar interacciones
-      viewport.addEventListener("wheel", panzoom.zoomWithWheel);
-      viewport.addEventListener("mousedown", () => canvas.style.cursor = 'grabbing');
-      viewport.addEventListener("mouseup", () => canvas.style.cursor = 'grab');
+      // Permitir zoom con rueda del mouse
+      viewport.addEventListener("wheel", panzoom.zoomWithWheel, { passive: false });
+ 
+      // Cambio de cursor al arrastrar
+      viewport.addEventListener("mousedown", () => (canvas.style.cursor = "grabbing"));
+      viewport.addEventListener("mouseup", () => (canvas.style.cursor = "grab"));
  
       // Botones
       document.getElementById("zoomIn").onclick = () => panzoom.zoomIn();
       document.getElementById("zoomOut").onclick = () => panzoom.zoomOut();
       document.getElementById("reset").onclick = () => panzoom.reset();
  
-      // Posición inicial (centrada)
-      panzoom.zoom(0.8);
-      panzoom.pan(-500, -400);
+      // Posición inicial centrada
+      panzoom.zoom(0.9);
+      panzoom.pan(-600, -400);
 </script>
 </body>
 </html>
