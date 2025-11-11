@@ -3,92 +3,228 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Línea de Tiempo Facturación</title>
+<title>Línea de Tiempo de Facturación</title>
 <style>
+      /* Estilos generales */
       body {
-        font-family: system-ui, sans-serif;
-        background: #f7f9fb;
         margin: 0;
-        padding: 40px;
+        font-family: "Inter", sans-serif;
+        background-color: #ffffff;
+        color: #222;
       }
-      h1 {
+ 
+      header {
         text-align: center;
+        padding: 40px 20px 10px;
+      }
+ 
+      h1 {
         color: #0072bb;
+        font-size: 2.2rem;
+        margin-bottom: 0.2rem;
       }
-      .timeline {
+ 
+      p.subtitle {
+        color: #666;
+        font-size: 1rem;
+        margin-top: 0;
+      }
+ 
+      /* Contenedor principal */
+      .timeline-container {
         position: relative;
-        margin: 40px auto;
-        max-width: 800px;
+        max-width: 1000px;
+        margin: 60px auto;
+        padding: 0 20px;
       }
-      .timeline::after {
-        content: '';
+ 
+      /* Línea central */
+      .timeline-line {
         position: absolute;
-        width: 4px;
-        background-color: #7cc242;
+        left: 50%;
         top: 0;
-        bottom: 0;
-        left: 50%;
-        margin-left: -2px;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #0072bb, #7cc242);
+        border-radius: 2px;
       }
-      .container {
-        padding: 10px 40px;
+ 
+      /* Evento */
+      .timeline-item {
         position: relative;
-        background-color: inherit;
         width: 50%;
+        padding: 20px 40px;
+        box-sizing: border-box;
       }
-      .left {
+ 
+      .timeline-item.left {
         left: 0;
+        text-align: right;
       }
-      .right {
+ 
+      .timeline-item.right {
         left: 50%;
       }
-      .content {
-        padding: 15px 25px;
-        background-color: white;
+ 
+      .timeline-content {
+        background: #f9f9f9;
+        border-radius: 12px;
+        padding: 20px;
         position: relative;
-        border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
-      .date {
+ 
+      .timeline-content:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+      }
+ 
+      .timeline-date {
         font-weight: bold;
         color: #0072bb;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
       }
-      @media screen and (max-width: 600px) {
-        .container {
+ 
+      .timeline-title {
+        font-size: 1.2rem;
+        color: #222;
+        margin-bottom: 6px;
+      }
+ 
+      .timeline-desc {
+        color: #555;
+        font-size: 0.95rem;
+      }
+ 
+      /* Círculos */
+      .timeline-dot {
+        position: absolute;
+        top: 25px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 4px solid #7cc242;
+        z-index: 10;
+        transition: transform 0.3s ease;
+      }
+ 
+      .timeline-item.left .timeline-dot {
+        right: -11px;
+      }
+ 
+      .timeline-item.right .timeline-dot {
+        left: -11px;
+      }
+ 
+      .timeline-dot:hover {
+        transform: scale(1.2);
+      }
+ 
+      /* Responsividad */
+      @media (max-width: 768px) {
+        .timeline-item {
           width: 100%;
           left: 0 !important;
+          text-align: left !important;
+          padding-left: 60px;
+          margin-bottom: 40px;
         }
-        .timeline::after {
-          left: 20px;
+ 
+        .timeline-line {
+          left: 30px;
         }
+ 
+        .timeline-item .timeline-dot {
+          left: 22px !important;
+        }
+      }
+ 
+      /* Animaciones de entrada */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+      }
+ 
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
       }
 </style>
 </head>
 <body>
+<header>
 <h1>📘 Línea de Tiempo de Facturación</h1>
-<div class="timeline" id="timeline"></div>
+<p class="subtitle">Historia y evolución del proceso de facturación</p>
+</header>
+ 
+    <main class="timeline-container">
+<div class="timeline-line"></div>
+<div id="timeline"></div>
+</main>
  
     <script>
+      // Datos simulados (después los conectamos con Google Sheets)
       const eventos = [
-        { fecha: '2023-04-01', titulo: 'Inicio de Facturación Electrónica', descripcion: 'Se implementa el nuevo proveedor de facturación electrónica.' },
-        { fecha: '2024-02-15', titulo: 'Error en Sistema Externo', descripcion: 'Falla del sistema de emisión que afectó temporalmente el ciclo.' },
-        { fecha: '2025-01-10', titulo: 'Automatización de Reintentos', descripcion: 'Se automatiza el flujo de reintentos para mejorar eficiencia.' },
+        {
+          fecha: "2023-04-01",
+          titulo: "Inicio de Facturación Electrónica",
+          descripcion: "Se implementa el nuevo proveedor de facturación electrónica.",
+        },
+        {
+          fecha: "2024-02-15",
+          titulo: "Error en Sistema Externo",
+          descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.",
+        },
+        {
+          fecha: "2025-01-10",
+          titulo: "Automatización de Reintentos",
+          descripcion: "Se automatiza el flujo de reintentos para mejorar eficiencia.",
+        },
+        {
+          fecha: "2025-08-05",
+          titulo: "Migración al nuevo servidor",
+          descripcion: "Cambio de infraestructura a un entorno más estable.",
+        },
       ];
  
-      const timeline = document.getElementById('timeline');
+      const timeline = document.getElementById("timeline");
  
+      // Crear los elementos
       eventos.forEach((e, i) => {
-        const container = document.createElement('div');
-        container.className = `container ${i % 2 === 0 ? 'left' : 'right'}`;
-        container.innerHTML = `
-<div class="content">
-<div class="date">${new Date(e.fecha).getFullYear()}</div>
-<h3>${e.titulo}</h3>
-<p>${e.descripcion}</p>
+        const item = document.createElement("div");
+        item.className = `timeline-item ${i % 2 === 0 ? "left" : "right"} fade-in`;
+        item.innerHTML = `
+<div class="timeline-dot"></div>
+<div class="timeline-content">
+<div class="timeline-date">${new Date(e.fecha).toLocaleDateString("es-ES", {
+              year: "numeric",
+              month: "long",
+            })}</div>
+<div class="timeline-title">${e.titulo}</div>
+<div class="timeline-desc">${e.descripcion}</div>
 </div>
         `;
-        timeline.appendChild(container);
+        timeline.appendChild(item);
       });
+ 
+      // Animación al hacer scroll (scroll reveal)
+      function revealOnScroll() {
+        const items = document.querySelectorAll(".fade-in");
+        items.forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight - 100) {
+            el.classList.add("visible");
+          }
+        });
+      }
+ 
+      window.addEventListener("scroll", revealOnScroll);
+      window.addEventListener("load", revealOnScroll);
 </script>
 </body>
 </html>
