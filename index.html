@@ -3,75 +3,66 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Línea de Tiempo de Facturación</title>
+<title>Línea de Tiempo Interactiva</title>
 <style>
       body {
         margin: 0;
         font-family: "Inter", system-ui, sans-serif;
         background-color: #fff;
-        color: #222;
         overflow: hidden;
       }
  
-      /* ---- Encabezado moderno ---- */
+      /* ---- Encabezado ---- */
       .hero {
+        position: fixed;
+        top: 0;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-direction: row;
         gap: 16px;
-        padding: 40px 20px;
+        padding: 20px;
         background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
         border-bottom: 1px solid #e3eaf0;
-        position: fixed;
-        width: 100%;
         z-index: 10;
       }
  
       .hero-square {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         background: linear-gradient(135deg, #0072bb, #7cc242);
-        border-radius: 12px;
+        border-radius: 10px;
         animation: float 3s ease-in-out infinite;
       }
- 
       @keyframes float {
-        0%, 100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-6px);
-        }
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
       }
- 
       .hero-text h1 {
-        font-size: 2rem;
-        font-weight: 700;
+        font-size: 1.7rem;
         color: #0072bb;
         margin: 0;
       }
- 
       .hero-text p {
-        color: #4a4a4a;
+        color: #555;
         font-size: 0.9rem;
-        margin: 4px 0 0;
+        margin: 2px 0 0;
       }
  
-      /* ---- Zona del mapa ---- */
+      /* ---- Área interactiva ---- */
       #viewport {
+        position: absolute;
+        top: 90px; /* deja espacio para el header */
+        left: 0;
         width: 100vw;
-        height: 100vh;
+        height: calc(100vh - 90px);
         overflow: hidden;
-        position: relative;
+        background: radial-gradient(circle at center, #fafafa, #f0f4f8);
       }
- 
       #canvas {
         width: 3000px;
         height: 2000px;
-        background: radial-gradient(circle at center, #fafafa, #f0f4f8);
         position: relative;
-        border-radius: 10px;
       }
  
       .event {
@@ -85,32 +76,27 @@
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
       }
- 
       .event:hover {
         transform: scale(1.05);
         box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
       }
- 
       .event h3 {
         margin: 0 0 8px;
         color: #0072bb;
-        font-size: 1.1rem;
       }
- 
       .event p {
         margin: 0;
         color: #444;
         font-size: 0.9rem;
       }
- 
-      .event .fecha {
+      .fecha {
         font-size: 0.85rem;
         color: #7cc242;
         font-weight: 600;
         margin-bottom: 6px;
       }
  
-      /* Botones de control */
+      /* ---- Controles ---- */
       .controls {
         position: fixed;
         bottom: 20px;
@@ -119,26 +105,20 @@
         gap: 10px;
         z-index: 20;
       }
- 
       .btn {
         background: #0072bb;
-        color: white;
+        color: #fff;
         border: none;
         border-radius: 6px;
         padding: 10px 14px;
         font-size: 16px;
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        transition: background 0.3s;
       }
- 
-      .btn:hover {
-        background: #005a99;
-      }
+      .btn:hover { background: #005a99; }
 </style>
 </head>
 <body>
-<!-- Encabezado -->
 <header class="hero">
 <div class="hero-square"></div>
 <div class="hero-text">
@@ -147,60 +127,32 @@
 </div>
 </header>
  
-    <!-- Zona interactiva -->
-<div id="viewport">
-<div id="canvas">
-<!-- Los eventos se insertarán aquí dinámicamente -->
-</div>
+    <div id="viewport">
+<div id="canvas"></div>
 </div>
  
-    <!-- Controles -->
-<div class="controls">
+    <div class="controls">
 <button class="btn" id="zoomIn">+</button>
-<button class="btn" id="zoomOut">-</button>
+<button class="btn" id="zoomOut">−</button>
 <button class="btn" id="reset">↺</button>
 </div>
  
-    <!-- Librería Panzoom -->
-<script src="https://unpkg.com/@panzoom/panzoom@9.4.3/dist/panzoom.min.js"></script>
+    <!-- Panzoom -->
+<script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@9.4.3/dist/panzoom.min.js"></script>
  
     <script>
       // Datos de ejemplo
       const eventos = [
-        {
-          fecha: "2023-04-01",
-          titulo: "Inicio de Facturación Electrónica",
-          descripcion: "Implementación del nuevo proveedor de facturación electrónica.",
-          x: 400,
-          y: 800,
-        },
-        {
-          fecha: "2024-02-15",
-          titulo: "Error en Sistema Externo",
-          descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.",
-          x: 900,
-          y: 600,
-        },
-        {
-          fecha: "2025-01-10",
-          titulo: "Automatización de Reintentos",
-          descripcion: "Automatización del flujo de reintentos para mejorar eficiencia.",
-          x: 1500,
-          y: 950,
-        },
-        {
-          fecha: "2025-08-05",
-          titulo: "Migración al Nuevo Servidor",
-          descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.",
-          x: 2200,
-          y: 700,
-        },
+        { fecha: "2023-04-01", titulo: "Inicio de Facturación Electrónica", descripcion: "Implementación del nuevo proveedor de facturación electrónica.", x: 400, y: 800 },
+        { fecha: "2024-02-15", titulo: "Error en Sistema Externo", descripcion: "Falla del sistema de emisión que afectó temporalmente el ciclo.", x: 900, y: 600 },
+        { fecha: "2025-01-10", titulo: "Automatización de Reintentos", descripcion: "Automatización del flujo de reintentos para mejorar eficiencia.", x: 1500, y: 950 },
+        { fecha: "2025-08-05", titulo: "Migración al Nuevo Servidor", descripcion: "Cambio de infraestructura hacia un entorno más estable y rápido.", x: 2200, y: 700 },
       ];
  
       const canvas = document.getElementById("canvas");
  
-      // Insertar eventos visualmente
-      eventos.forEach((e) => {
+      // Crear eventos
+      eventos.forEach(e => {
         const el = document.createElement("div");
         el.classList.add("event");
         el.style.left = e.x + "px";
@@ -214,22 +166,28 @@
       });
  
       // Inicializar Panzoom
+      const viewport = document.getElementById("viewport");
       const panzoom = Panzoom(canvas, {
         maxScale: 3,
         minScale: 0.4,
-        step: 0.2,
-        smoothScroll: false,
+        step: 0.3,
+        contain: 'outside',
+        cursor: 'grab'
       });
  
-      // Permitir interacción con mouse
-      const viewport = document.getElementById("viewport");
+      // Habilitar interacciones
       viewport.addEventListener("wheel", panzoom.zoomWithWheel);
-      viewport.addEventListener("dblclick", (e) => panzoom.zoomIn());
+      viewport.addEventListener("mousedown", () => canvas.style.cursor = 'grabbing');
+      viewport.addEventListener("mouseup", () => canvas.style.cursor = 'grab');
  
-      // Controles
-      document.getElementById("zoomIn").addEventListener("click", () => panzoom.zoomIn());
-      document.getElementById("zoomOut").addEventListener("click", () => panzoom.zoomOut());
-      document.getElementById("reset").addEventListener("click", () => panzoom.reset());
+      // Botones
+      document.getElementById("zoomIn").onclick = () => panzoom.zoomIn();
+      document.getElementById("zoomOut").onclick = () => panzoom.zoomOut();
+      document.getElementById("reset").onclick = () => panzoom.reset();
+ 
+      // Posición inicial (centrada)
+      panzoom.zoom(0.8);
+      panzoom.pan(-500, -400);
 </script>
 </body>
 </html>
