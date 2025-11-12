@@ -238,48 +238,52 @@ window.addEventListener("DOMContentLoaded", () => {
   /* -------------------------
       GUARDAR NUEVO HITO (APPEND)
   ------------------------- */
-  FORM.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-      const nuevoHito = [
-        document.getElementById("fecha").value,
-        document.getElementById("titulo").value,
-        document.getElementById("detalle").value,
-        document.getElementById("descripcion").value,
-        document.getElementById("tipo").value,
-        document.getElementById("impacto").value,
-        document.getElementById("autor").value
-      ];
+FORM.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  MSG.innerText = "Guardando...";
+  MSG.style.color = "#0072bb";
  
-      const appendUrl = 
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:G:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+  try {
+    const payload = {
+      fecha: document.getElementById("fecha").value,
+      titulo: document.getElementById("titulo").value,
+      detalle: document.getElementById("detalle").value,
+      descripcion: document.getElementById("descripcion").value,
+      tipo: document.getElementById("tipo").value,
+      impacto: document.getElementById("impacto").value,
+      autor: document.getElementById("autor").value
+    };
  
-      const res = await fetch(appendUrl, {
+    const res = await fetch(
+      "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ values: [nuevoHito] })
-      });
- 
-      if (!res.ok) {
-        console.error(await res.text());
-        throw new Error("No se pudo guardar.");
+        body: JSON.stringify(payload)
       }
+    );
  
-      MSG.innerText = "✅ Hito guardado exitosamente.";
-      MSG.style.color = "#2e8b57";
+    const json = await res.json();
  
-      FORM.reset();
-      sidePanel.classList.remove("active");
- 
-      // Recargar hitos en pantalla
-      await cargarHitosDesdeSheets();
- 
-    } catch (err) {
-      console.error("❌ Error guardando hito:", err);
-      MSG.innerText = "❌ Error al guardar el hito.";
-      MSG.style.color = "red";
+    if (json.status !== "success") {
+      throw new Error("Error en Apps Script");
     }
-  });
+ 
+    MSG.innerText = "✅ Hito guardado correctamente";
+    MSG.style.color = "#2e8b57";
+ 
+    FORM.reset();
+    sidePanel.classList.remove("active");
+ 
+    // Recarga visual
+    cargarHitosDesdeSheets();
+ 
+  } catch (err) {
+    console.error(err);
+    MSG.innerText = "❌ Error al guardar el hito";
+    MSG.style.color = "red";
+  }
+});
  
 });
 </script>
