@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CAMINO GDC</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CAMINO GDC</title>
+    <style>
       body {
         margin: 0;
         font-family: "Inter", system-ui, sans-serif;
         background: #fff;
         color: #222;
       }
- 
+
       /* ---- Encabezado con logo flotante y degradado ---- */
       .hero {
         display: flex;
@@ -23,13 +23,13 @@
         background: linear-gradient(135deg, #eaf6ff 0%, #d3f7e4 100%);
         border-bottom: 1px solid #e3eaf0;
       }
- 
+
       .hero-icon {
         position: relative;
         width: 90px;
         height: 90px;
       }
- 
+
       .hero-logo {
         width: 90px;
         height: 90px;
@@ -37,7 +37,7 @@
         animation: float 3s ease-in-out infinite;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
       }
- 
+
       .hero-line {
         position: absolute;
         bottom: -8px;
@@ -49,7 +49,7 @@
         border-radius: 2px;
         opacity: 0.8;
       }
- 
+
       .hero-text h1 {
         font-size: 2.4rem;
         font-weight: 700;
@@ -57,19 +57,19 @@
         margin: 0;
         letter-spacing: -0.5px;
       }
- 
+
       .hero-text p {
         font-size: 1rem;
         color: #4a4a4a;
         margin-top: 6px;
         letter-spacing: 0.2px;
       }
- 
+
       @keyframes float {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-6px); }
       }
- 
+
       @media (max-width: 768px) {
         .hero {
           flex-direction: column;
@@ -79,7 +79,7 @@
           margin-bottom: 12px;
         }
       }
- 
+
       /* ---- Línea principal ---- */
       .main-timeline {
         display: flex;
@@ -91,7 +91,7 @@
         padding: 0 40px;
         max-width: 1000px;
       }
- 
+
       .main-timeline::before {
         content: "";
         position: absolute;
@@ -102,7 +102,7 @@
         background: linear-gradient(90deg, #0072bb, #7cc242);
         z-index: 0;
       }
- 
+
       .year-node {
         position: relative;
         background: #fff;
@@ -119,19 +119,19 @@
         z-index: 1;
         transition: transform 0.25s, background 0.25s, color 0.25s;
       }
- 
+
       .year-node:hover {
         background: #0072bb;
         color: #fff;
         transform: scale(1.1);
       }
- 
+
       .year-node.active {
         background: #7cc242;
         color: #fff;
         border-color: #7cc242;
       }
- 
+
       /* ---- Sub-línea (eventos por año) ---- */
       .year-details {
         display: none;
@@ -139,17 +139,17 @@
         align-items: center;
         margin: 30px 0 60px;
       }
- 
+
       .year-details.active {
         display: flex;
         animation: fadeIn 0.5s ease;
       }
- 
+
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
- 
+
       .events-line {
         position: relative;
         width: 4px;
@@ -157,7 +157,7 @@
         height: 100%;
         margin: 0 auto;
       }
- 
+
       .event {
         position: relative;
         background: #f9f9f9;
@@ -167,71 +167,120 @@
         width: 300px;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
         margin: 25px 0;
+        cursor: pointer;
         transition: transform 0.3s ease;
       }
- 
+
       .event:hover {
         transform: translateY(-4px);
       }
- 
+
       .event .date {
         color: #7cc242;
         font-weight: 600;
         margin-bottom: 4px;
         font-size: 0.9rem;
       }
- 
+
       .event h3 {
         margin: 4px 0 6px;
         color: #0072bb;
         font-size: 1.1rem;
       }
- 
+
       .event p {
         margin: 0;
         color: #444;
         font-size: 0.9rem;
       }
-</style>
-</head>
- 
+
+      /* ---- Modal flotante ---- */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .modal-content {
+        background: #fff;
+        padding: 25px 30px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease;
+      }
+
+      @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .modal h2 {
+        margin-top: 0;
+        color: #0072bb;
+      }
+
+      .modal-close {
+        text-align: right;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #666;
+      }
+
+      .modal-close:hover {
+        color: #000;
+      }
+    </style>
+  </head>
+
   <body>
-<!-- Encabezado -->
-<header class="hero">
-<div class="hero-icon">
-<img src="logo-gases.png" alt="Gases del Caribe" class="hero-logo" />
-<div class="hero-line"></div>
-</div>
-<div class="hero-text">
-<h1>CAMINO GDC</h1>
-<p>Explorá los hitos más importantes por año</p>
-</div>
-</header>
- 
+    <!-- Encabezado -->
+    <header class="hero">
+      <div class="hero-icon">
+        <img src="logo-gases.png" alt="Gases del Caribe" class="hero-logo" />
+        <div class="hero-line"></div>
+      </div>
+      <div class="hero-text">
+        <h1>CAMINO GDC</h1>
+        <p>Explorá los hitos más importantes por año</p>
+      </div>
+    </header>
+
     <!-- Línea principal -->
-<section class="main-timeline" id="timeline">
-<div class="year-node" data-year="2023">2023</div>
-<div class="year-node" data-year="2024">2024</div>
-<div class="year-node" data-year="2025">2025</div>
-</section>
- 
+    <section class="main-timeline" id="timeline">
+      <div class="year-node" data-year="2023">2023</div>
+      <div class="year-node" data-year="2024">2024</div>
+      <div class="year-node" data-year="2025">2025</div>
+    </section>
+
     <!-- Detalles (vacíos, se llenan dinámicamente) -->
-<section class="year-details" id="details-2023">
-<div class="events-line"></div>
-</section>
- 
-    <section class="year-details" id="details-2024">
-<div class="events-line"></div>
-</section>
- 
-    <section class="year-details" id="details-2025">
-<div class="events-line"></div>
-</section>
- 
+    <section class="year-details" id="details-2023"><div class="events-line"></div></section>
+    <section class="year-details" id="details-2024"><div class="events-line"></div></section>
+    <section class="year-details" id="details-2025"><div class="events-line"></div></section>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-close" id="closeModal">✖</div>
+        <h2 id="modalTitle"></h2>
+        <p id="modalDesc"></p>
+        <p id="modalExtra" style="margin-top:12px; font-size:0.9rem; color:#333;"></p>
+      </div>
+    </div>
+
     <script>
       const nodes = document.querySelectorAll(".year-node");
       const details = document.querySelectorAll(".year-details");
- 
+
       nodes.forEach(node => {
         node.addEventListener("click", () => {
           const year = node.dataset.year;
@@ -243,54 +292,65 @@
             .scrollIntoView({ behavior: "smooth", block: "start" });
         });
       });
-</script>
- 
+
+      /* --- Modal --- */
+      const modal = document.getElementById("modal");
+      const closeModal = document.getElementById("closeModal");
+
+      closeModal.onclick = () => (modal.style.display = "none");
+      window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+    </script>
+
     <!-- 🔗 Conexión a Google Sheets -->
-<script>
+    <script>
       const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-      const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+      const API_KEY = "TU_API_KEY_AQUI";
       const SHEET_NAME = "Hitos";
- 
+
       async function cargarHitosDesdeSheets() {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
- 
+        const url = https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY};
         try {
           const res = await fetch(url);
           const data = await res.json();
- 
-          if (!data.values) {
-            console.error("❌ No se encontraron datos en la hoja");
-            return;
-          }
- 
-          const valores = data.values.slice(1); // omitir encabezado
- 
+          if (!data.values) return;
+          const valores = data.values.slice(1);
+
           valores.forEach(row => {
             const [fecha, titulo, descripcion, tipo, impacto, autor] = row;
             if (!fecha) return;
- 
             const year = new Date(fecha).getFullYear();
-            const contenedor = document.getElementById(`details-${year}`);
-            if (!contenedor) return; // si el año no existe, ignorar
- 
+            const contenedor = document.getElementById(details-${year});
+            if (!contenedor) return;
+
             const evento = document.createElement("div");
             evento.className = "event";
             evento.innerHTML = `
-<div class="date">${fecha}</div>
-<h3>${titulo}</h3>
-<p>${descripcion}</p>
-<p><b>Tipo:</b> ${tipo} | <b>Impacto:</b> ${impacto} | <b>Autor:</b> ${autor}</p>
+              <div class="date">${fecha}</div>
+              <h3>${titulo}</h3>
+              <p>${descripcion}</p>
+              <p><b>Autor:</b> ${autor}</p>
             `;
+            evento.addEventListener("click", () => {
+              document.getElementById("modalTitle").innerText = titulo;
+              document.getElementById("modalDesc").innerText = descripcion;
+              document.getElementById("modalExtra").innerHTML = `
+                <b>Fecha:</b> ${fecha}<br>
+                <b>Tipo:</b> ${tipo}<br>
+                <b>Impacto:</b> ${impacto}<br>
+                <b>Autor:</b> ${autor}
+              `;
+              modal.style.display = "flex";
+            });
             contenedor.appendChild(evento);
           });
- 
-          console.log("✅ Hitos cargados correctamente desde Google Sheets.");
+
+          console.log("✅ Hitos cargados y modales activos.");
         } catch (err) {
           console.error("❌ Error cargando los datos:", err);
         }
       }
- 
+
       window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
-</script>
-</body>
+    </script>
+  </body>
 </html>
