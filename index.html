@@ -12,7 +12,7 @@
         color: #222;
       }
 
-      /* ---- Encabezado con logo flotante y degradado ---- */
+      /* ---- Encabezado ---- */
       .hero {
         display: flex;
         align-items: center;
@@ -62,7 +62,6 @@
         font-size: 1rem;
         color: #4a4a4a;
         margin-top: 6px;
-        letter-spacing: 0.2px;
       }
 
       @keyframes float {
@@ -71,13 +70,8 @@
       }
 
       @media (max-width: 768px) {
-        .hero {
-          flex-direction: column;
-          text-align: center;
-        }
-        .hero-icon {
-          margin-bottom: 12px;
-        }
+        .hero { flex-direction: column; text-align: center; }
+        .hero-icon { margin-bottom: 12px; }
       }
 
       /* ---- Línea principal ---- */
@@ -132,7 +126,7 @@
         border-color: #7cc242;
       }
 
-      /* ---- Sub-línea (eventos por año) ---- */
+      /* ---- Sub-línea ---- */
       .year-details {
         display: none;
         flex-direction: column;
@@ -171,38 +165,18 @@
         transition: transform 0.3s ease;
       }
 
-      .event:hover {
-        transform: translateY(-4px);
-      }
+      .event:hover { transform: translateY(-4px); }
+      .event .date { color: #7cc242; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; }
+      .event h3 { margin: 4px 0 6px; color: #0072bb; font-size: 1.1rem; }
+      .event p { margin: 0; color: #444; font-size: 0.9rem; }
 
-      .event .date {
-        color: #7cc242;
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 0.9rem;
-      }
-
-      .event h3 {
-        margin: 4px 0 6px;
-        color: #0072bb;
-        font-size: 1.1rem;
-      }
-
-      .event p {
-        margin: 0;
-        color: #444;
-        font-size: 0.9rem;
-      }
-
-      /* ---- Modal flotante ---- */
+      /* ---- Modal ---- */
       .modal {
         display: none;
         position: fixed;
         z-index: 100;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
         background-color: rgba(0,0,0,0.5);
         justify-content: center;
         align-items: center;
@@ -224,20 +198,76 @@
         to { transform: translateY(0); opacity: 1; }
       }
 
-      .modal h2 {
-        margin-top: 0;
+      .modal h2 { margin-top: 0; color: #0072bb; }
+      .modal-close { text-align: right; font-size: 1.2rem; cursor: pointer; color: #666; }
+      .modal-close:hover { color: #000; }
+
+      /* ---- Formulario ---- */
+      #formulario {
+        max-width: 700px;
+        margin: 60px auto 100px;
+        padding: 40px 30px;
+        background: linear-gradient(135deg, #f7fbff 0%, #ebfff2 100%);
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      }
+
+      #formulario h2 {
         color: #0072bb;
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 1.6rem;
       }
 
-      .modal-close {
-        text-align: right;
-        font-size: 1.2rem;
+      form#hitoForm {
+        display: grid;
+        gap: 15px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      form#hitoForm textarea {
+        grid-column: 1 / 3;
+      }
+
+      form#hitoForm button {
+        grid-column: 1 / 3;
+      }
+
+      input, textarea, select {
+        font-family: inherit;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cdd9e1;
+        font-size: 0.95rem;
+        transition: border 0.2s ease;
+      }
+
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #0072bb;
+        box-shadow: 0 0 0 2px rgba(0,114,187,0.15);
+      }
+
+      button {
+        background: linear-gradient(90deg, #0072bb, #7cc242);
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
         cursor: pointer;
-        color: #666;
+        font-weight: 600;
+        transition: transform 0.2s ease, opacity 0.2s ease;
       }
 
-      .modal-close:hover {
-        color: #000;
+      button:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+      }
+
+      #msg {
+        text-align: center;
+        margin-top: 15px;
+        font-weight: 600;
       }
     </style>
   </head>
@@ -262,10 +292,37 @@
       <div class="year-node" data-year="2025">2025</div>
     </section>
 
-    <!-- Detalles (vacíos, se llenan dinámicamente) -->
+    <!-- Detalles -->
     <section class="year-details" id="details-2023"><div class="events-line"></div></section>
     <section class="year-details" id="details-2024"><div class="events-line"></div></section>
     <section class="year-details" id="details-2025"><div class="events-line"></div></section>
+
+    <!-- Formulario -->
+    <section id="formulario">
+      <h2>Registrar nuevo hito</h2>
+      <form id="hitoForm">
+        <input type="date" id="fecha" required>
+        <input type="text" id="titulo" placeholder="Título" required>
+        <input type="text" id="detalle" placeholder="Detalle breve (máx 8 palabras)" required>
+        <textarea id="descripcion" placeholder="Descripción completa" rows="4" required></textarea>
+        <select id="tipo" required>
+          <option value="" disabled selected>Tipo de evento</option>
+          <option>Implementación</option>
+          <option>Incidente</option>
+          <option>Mejora</option>
+          <option>Otro</option>
+        </select>
+        <select id="impacto" required>
+          <option value="" disabled selected>Nivel de impacto</option>
+          <option>Alta</option>
+          <option>Media</option>
+          <option>Baja</option>
+        </select>
+        <input type="text" id="autor" placeholder="Autor" required>
+        <button type="submit">Guardar hito</button>
+      </form>
+      <p id="msg"></p>
+    </section>
 
     <!-- Modal -->
     <div id="modal" class="modal">
@@ -280,7 +337,6 @@
     <script>
       const nodes = document.querySelectorAll(".year-node");
       const details = document.querySelectorAll(".year-details");
-
       nodes.forEach(node => {
         node.addEventListener("click", () => {
           const year = node.dataset.year;
@@ -293,73 +349,90 @@
         });
       });
 
-      /* --- Modal --- */
       const modal = document.getElementById("modal");
       const closeModal = document.getElementById("closeModal");
-
       closeModal.onclick = () => (modal.style.display = "none");
       window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
     </script>
 
-    <!-- 🔗 Conexión a Google Sheets -->
-  <script>
-  const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // ⚠️ poné tu clave actual aquí
-  const SHEET_NAME = "Hitos";
- 
-  async function cargarHitosDesdeSheets() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
- 
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (!data.values) {
-        console.error("❌ No se encontraron datos en la hoja.");
-        return;
+    <!-- Conexión a Google Sheets -->
+    <script>
+      const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+      const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // ⚠️ reemplazá con tu clave
+      const SHEET_NAME = "Hitos";
+
+      async function cargarHitosDesdeSheets() {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if (!data.values) return;
+          const valores = data.values.slice(1);
+
+          valores.forEach(row => {
+            const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
+            if (!fecha) return;
+            const year = new Date(fecha).getFullYear();
+            const contenedor = document.getElementById(details-${year});
+            if (!contenedor) return;
+
+            const evento = document.createElement("div");
+            evento.className = "event";
+            evento.innerHTML = `
+              <div class="date">${fecha}</div>
+              <h3>${titulo}</h3>
+              <p>${detalle}</p>
+              <p><b>Autor:</b> ${autor}</p>
+            `;
+            evento.addEventListener("click", () => {
+              document.getElementById("modalTitle").innerText = titulo;
+              document.getElementById("modalDesc").innerText = descripcion;
+              document.getElementById("modalExtra").innerHTML = `
+                <b>Fecha:</b> ${fecha}<br>
+                <b>Tipo:</b> ${tipo}<br>
+                <b>Impacto:</b> ${impacto}<br>
+                <b>Autor:</b> ${autor}
+              `;
+              modal.style.display = "flex";
+            });
+            contenedor.appendChild(evento);
+          });
+          console.log("✅ Hitos cargados correctamente.");
+        } catch (err) {
+          console.error("❌ Error cargando los datos:", err);
+        }
       }
- 
-      const valores = data.values.slice(1); // omitir encabezado
- 
-      valores.forEach(row => {
-        const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
-        if (!fecha) return;
- 
-        const year = new Date(fecha).getFullYear();
-        const contenedor = document.getElementById(`details-${year}`);
-        if (!contenedor) return;
- 
-        const evento = document.createElement("div");
-        evento.className = "event";
-        evento.innerHTML = `
-<div class="date">${fecha}</div>
-<h3>${titulo}</h3>
-<p>${detalle}</p>
-<p><b>Autor:</b> ${autor}</p>
-        `;
- 
-        // Modal al hacer clic
-        evento.addEventListener("click", () => {
-          document.getElementById("modalTitle").innerText = titulo;
-          document.getElementById("modalDesc").innerText = descripcion;
-          document.getElementById("modalExtra").innerHTML = `
-<b>Fecha:</b> ${fecha}<br>
-<b>Tipo:</b> ${tipo}<br>
-<b>Impacto:</b> ${impacto}<br>
-<b>Autor:</b> ${autor}
-          `;
-          modal.style.display = "flex";
-        });
- 
-        contenedor.appendChild(evento);
+
+      window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
+
+      /* ---- Formulario para agregar hitos ---- */
+      const FORM = document.getElementById("hitoForm");
+      const MSG = document.getElementById("msg");
+      FORM.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nuevoHito = [
+          fecha.value, titulo.value, detalle.value, descripcion.value,
+          tipo.value, impacto.value, autor.value
+        ];
+        const url = https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:G:append?valueInputOption=USER_ENTERED&key=${API_KEY};
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ values: [nuevoHito] })
+          });
+          if (res.ok) {
+            MSG.innerText = "✅ Hito guardado exitosamente.";
+            MSG.style.color = "#2e8b57";
+            FORM.reset();
+            cargarHitosDesdeSheets();
+          } else throw new Error(await res.text());
+        } catch (err) {
+          console.error(err);
+          MSG.innerText = "❌ Error al guardar el hito.";
+          MSG.style.color = "red";
+        }
       });
- 
-      console.log("✅ Hitos cargados correctamente con detalle breve.");
-    } catch (err) {
-      console.error("❌ Error cargando los datos:", err);
-    }
-  }
- 
-  window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
-</script>
+    </script>
   </body>
 </html>
