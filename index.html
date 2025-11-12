@@ -302,55 +302,65 @@
     </script>
 
     <!-- 🔗 Conexión a Google Sheets -->
-    <script>
-      const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-      const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
-      const SHEET_NAME = "Hitos";
-
-      async function cargarHitosDesdeSheets() {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-          if (!data.values) return;
-          const valores = data.values.slice(1);
-
-          valores.forEach(row => {
-            const [fecha, titulo, descripcion, tipo, impacto, autor] = row;
-            if (!fecha) return;
-            const year = new Date(fecha).getFullYear();
-            const contenedor = document.getElementById(details-${year});
-            if (!contenedor) return;
-
-            const evento = document.createElement("div");
-            evento.className = "event";
-            evento.innerHTML = `
-              <div class="date">${fecha}</div>
-              <h3>${titulo}</h3>
-              <p>${descripcion}</p>
-              <p><b>Autor:</b> ${autor}</p>
-            `;
-            evento.addEventListener("click", () => {
-              document.getElementById("modalTitle").innerText = titulo;
-              document.getElementById("modalDesc").innerText = descripcion;
-              document.getElementById("modalExtra").innerHTML = `
-                <b>Fecha:</b> ${fecha}<br>
-                <b>Tipo:</b> ${tipo}<br>
-                <b>Impacto:</b> ${impacto}<br>
-                <b>Autor:</b> ${autor}
-              `;
-              modal.style.display = "flex";
-            });
-            contenedor.appendChild(evento);
-          });
-
-          console.log("✅ Hitos cargados y modales activos.");
-        } catch (err) {
-          console.error("❌ Error cargando los datos:", err);
-        }
+   <script>
+  const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // 
+  const SHEET_NAME = "Hitos";
+ 
+  async function cargarHitosDesdeSheets() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+ 
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+ 
+      if (!data.values) {
+        console.error("❌ No se encontraron datos en la hoja.");
+        return;
       }
-
-      window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
-    </script>
+ 
+      const valores = data.values.slice(1); // omite encabezado
+ 
+      valores.forEach(row => {
+        const [fecha, titulo, descripcion, tipo, impacto, autor] = row;
+        if (!fecha) return;
+ 
+        const year = new Date(fecha).getFullYear();
+        const contenedor = document.getElementById(`details-${year}`);
+        if (!contenedor) return; // ignora años que no tengan contenedor
+ 
+        const evento = document.createElement("div");
+        evento.className = "event";
+        evento.innerHTML = `
+<div class="date">${fecha}</div>
+<h3>${titulo}</h3>
+<p>${descripcion}</p>
+<p><b>Autor:</b> ${autor}</p>
+        `;
+ 
+        // Modal al hacer clic
+        evento.addEventListener("click", () => {
+          document.getElementById("modalTitle").innerText = titulo;
+          document.getElementById("modalDesc").innerText = descripcion;
+          document.getElementById("modalExtra").innerHTML = `
+<b>Fecha:</b> ${fecha}<br>
+<b>Tipo:</b> ${tipo}<br>
+<b>Impacto:</b> ${impacto}<br>
+<b>Autor:</b> ${autor}
+          `;
+          modal.style.display = "flex";
+        });
+ 
+        contenedor.appendChild(evento);
+      });
+ 
+      console.log("✅ Hitos cargados correctamente desde Google Sheets.");
+    } catch (err) {
+      console.error("❌ Error cargando los datos:", err);
+    }
+  }
+ 
+  window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
+</script>
   </body>
 </html>
