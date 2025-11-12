@@ -1,438 +1,307 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CAMINO GDC</title>
-    <style>
-      body {
-        margin: 0;
-        font-family: "Inter", system-ui, sans-serif;
-        background: #fff;
-        color: #222;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CAMINO GDC</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      background: #fff;
+      color: #222;
+      overflow-x: hidden;
+    }
 
-      /* ---- Encabezado ---- */
-      .hero {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: row;
-        gap: 18px;
-        padding: 60px 20px 40px;
-        background: linear-gradient(135deg, #eaf6ff 0%, #d3f7e4 100%);
-        border-bottom: 1px solid #e3eaf0;
-      }
+    /* ---- Encabezado ---- */
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+      gap: 18px;
+      padding: 60px 20px 40px;
+      background: linear-gradient(135deg, #eaf6ff 0%, #d3f7e4 100%);
+      border-bottom: 1px solid #e3eaf0;
+    }
 
-      .hero-icon {
-        position: relative;
-        width: 90px;
-        height: 90px;
-      }
+    .hero-icon { position: relative; width: 90px; height: 90px; }
+    .hero-logo { width: 90px; height: 90px; object-fit: contain; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);} }
+    .hero-line {
+      position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+      width: 4px; height: 16px; background: linear-gradient(180deg,#7cc242,#0072bb);
+      border-radius: 2px; opacity: 0.8;
+    }
 
-      .hero-logo {
-        width: 90px;
-        height: 90px;
-        object-fit: contain;
-        animation: float 3s ease-in-out infinite;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-      }
+    .hero-text h1 { font-size: 2.4rem; font-weight: 700; color: #0072bb; margin: 0; }
+    .hero-text p { font-size: 1rem; color: #4a4a4a; margin-top: 6px; }
 
-      .hero-line {
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 4px;
-        height: 16px;
-        background: linear-gradient(180deg, #7cc242, #0072bb);
-        border-radius: 2px;
-        opacity: 0.8;
-      }
+    /* ---- Línea principal ---- */
+    .main-timeline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 80px;
+      position: relative;
+      margin: 80px auto;
+      padding: 0 40px;
+      max-width: 1000px;
+    }
+    .main-timeline::before {
+      content: ""; position: absolute; top: 50%; left: 5%; right: 5%; height: 4px;
+      background: linear-gradient(90deg,#0072bb,#7cc242); z-index: 0;
+    }
+    .year-node {
+      position: relative; background: #fff; border: 4px solid #0072bb; border-radius: 50%;
+      width: 75px; height: 75px; display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: #0072bb; cursor: pointer; transition: 0.25s;
+    }
+    .year-node:hover { background: #0072bb; color: #fff; transform: scale(1.1); }
+    .year-node.active { background: #7cc242; color: #fff; border-color: #7cc242; }
 
-      .hero-text h1 {
-        font-size: 2.4rem;
-        font-weight: 700;
-        color: #0072bb;
-        margin: 0;
-        letter-spacing: -0.5px;
-      }
+    .year-details { display: none; flex-direction: column; align-items: center; margin: 30px 0 60px; }
+    .year-details.active { display: flex; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
 
-      .hero-text p {
-        font-size: 1rem;
-        color: #4a4a4a;
-        margin-top: 6px;
-      }
+    .event {
+      position: relative; background: #f9f9f9; border-left: 6px solid #0072bb;
+      border-radius: 8px; padding: 15px 20px; width: 300px; box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+      margin: 25px 0; cursor: pointer; transition: 0.3s ease;
+    }
+    .event:hover { transform: translateY(-4px); }
+    .event .date { color: #7cc242; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; }
+    .event h3 { margin: 4px 0 6px; color: #0072bb; font-size: 1.1rem; }
+    .event p { margin: 0; color: #444; font-size: 0.9rem; }
 
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
-      }
+    /* ---- Botón flotante ---- */
+    #openFormBtn {
+      position: fixed; left: 30px; top: 30px;
+      background: linear-gradient(135deg,#0072bb,#7cc242);
+      color: white; border: none; border-radius: 50%;
+      width: 60px; height: 60px; font-size: 2rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      cursor: pointer; transition: transform 0.25s ease;
+      z-index: 10;
+    }
+    #openFormBtn:hover { transform: scale(1.1); }
 
-      @media (max-width: 768px) {
-        .hero { flex-direction: column; text-align: center; }
-        .hero-icon { margin-bottom: 12px; }
-      }
+    /* ---- Panel lateral ---- */
+    #sidePanel {
+      position: fixed; left: -400px; top: 0;
+      width: 350px; height: 100%;
+      background: #f9fcff;
+      border-right: 2px solid #0072bb33;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+      padding: 30px 25px;
+      transition: left 0.4s ease;
+      z-index: 9;
+      overflow-y: auto;
+    }
+    #sidePanel.active { left: 0; }
 
-      /* ---- Línea principal ---- */
-      .main-timeline {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 80px;
-        position: relative;
-        margin: 80px auto;
-        padding: 0 40px;
-        max-width: 1000px;
-      }
+    #sidePanel h2 {
+      color: #0072bb;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-      .main-timeline::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 5%;
-        right: 5%;
-        height: 4px;
-        background: linear-gradient(90deg, #0072bb, #7cc242);
-        z-index: 0;
-      }
+    #hitoForm {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    input, textarea, select {
+      font-family: inherit;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #cdd9e1;
+      font-size: 0.95rem;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: #0072bb;
+      box-shadow: 0 0 0 2px rgba(0,114,187,0.15);
+    }
+    button.submit {
+      background: linear-gradient(90deg,#0072bb,#7cc242);
+      color: white; padding: 12px;
+      border: none; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
+      transition: transform 0.2s ease;
+    }
+    button.submit:hover { transform: scale(1.02); }
 
-      .year-node {
-        position: relative;
-        background: #fff;
-        border: 4px solid #0072bb;
-        border-radius: 50%;
-        width: 75px;
-        height: 75px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: #0072bb;
-        cursor: pointer;
-        z-index: 1;
-        transition: transform 0.25s, background 0.25s, color 0.25s;
-      }
+    #closePanel {
+      position: absolute; top: 15px; right: 20px;
+      font-size: 1.3rem; color: #0072bb; cursor: pointer;
+    }
 
-      .year-node:hover {
-        background: #0072bb;
-        color: #fff;
-        transform: scale(1.1);
-      }
+    #msg { text-align: center; font-weight: 600; margin-top: 10px; }
 
-      .year-node.active {
-        background: #7cc242;
-        color: #fff;
-        border-color: #7cc242;
-      }
+    /* ---- Modal ---- */
+    .modal { display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+    .modal-content { background:#fff; padding:25px 30px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 5px 15px rgba(0,0,0,0.2); }
+    .modal h2{margin-top:0;color:#0072bb;}
+    .modal-close{text-align:right;font-size:1.2rem;cursor:pointer;color:#666;}
+    .modal-close:hover{color:#000;}
+  </style>
+</head>
+<body>
 
-      /* ---- Sub-línea ---- */
-      .year-details {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        margin: 30px 0 60px;
-      }
+  <!-- Botón flotante -->
+  <button id="openFormBtn">＋</button>
 
-      .year-details.active {
-        display: flex;
-        animation: fadeIn 0.5s ease;
-      }
-
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      .events-line {
-        position: relative;
-        width: 4px;
-        background: #0072bb40;
-        height: 100%;
-        margin: 0 auto;
-      }
-
-      .event {
-        position: relative;
-        background: #f9f9f9;
-        border-left: 6px solid #0072bb;
-        border-radius: 8px;
-        padding: 15px 20px;
-        width: 300px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-        margin: 25px 0;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-      }
-
-      .event:hover { transform: translateY(-4px); }
-      .event .date { color: #7cc242; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; }
-      .event h3 { margin: 4px 0 6px; color: #0072bb; font-size: 1.1rem; }
-      .event p { margin: 0; color: #444; font-size: 0.9rem; }
-
-      /* ---- Modal ---- */
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 100;
-        left: 0; top: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        justify-content: center;
-        align-items: center;
-        animation: fadeIn 0.4s ease;
-      }
-
-      .modal-content {
-        background: #fff;
-        padding: 25px 30px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        animation: slideUp 0.3s ease;
-      }
-
-      @keyframes slideUp {
-        from { transform: translateY(30px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-
-      .modal h2 { margin-top: 0; color: #0072bb; }
-      .modal-close { text-align: right; font-size: 1.2rem; cursor: pointer; color: #666; }
-      .modal-close:hover { color: #000; }
-
-      /* ---- Formulario ---- */
-      #formulario {
-        max-width: 700px;
-        margin: 60px auto 100px;
-        padding: 40px 30px;
-        background: linear-gradient(135deg, #f7fbff 0%, #ebfff2 100%);
-        border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      }
-
-      #formulario h2 {
-        color: #0072bb;
-        text-align: center;
-        margin-bottom: 25px;
-        font-size: 1.6rem;
-      }
-
-      form#hitoForm {
-        display: grid;
-        gap: 15px;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      form#hitoForm textarea {
-        grid-column: 1 / 3;
-      }
-
-      form#hitoForm button {
-        grid-column: 1 / 3;
-      }
-
-      input, textarea, select {
-        font-family: inherit;
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid #cdd9e1;
-        font-size: 0.95rem;
-        transition: border 0.2s ease;
-      }
-
-      input:focus, textarea:focus, select:focus {
-        outline: none;
-        border-color: #0072bb;
-        box-shadow: 0 0 0 2px rgba(0,114,187,0.15);
-      }
-
-      button {
-        background: linear-gradient(90deg, #0072bb, #7cc242);
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: transform 0.2s ease, opacity 0.2s ease;
-      }
-
-      button:hover {
-        opacity: 0.9;
-        transform: scale(1.02);
-      }
-
-      #msg {
-        text-align: center;
-        margin-top: 15px;
-        font-weight: 600;
-      }
-    </style>
-  </head>
-
-  <body>
-    <!-- Encabezado -->
-    <header class="hero">
-      <div class="hero-icon">
-        <img src="logo-gases.png" alt="Gases del Caribe" class="hero-logo" />
-        <div class="hero-line"></div>
-      </div>
-      <div class="hero-text">
-        <h1>CAMINO GDC</h1>
-        <p>Explorá los hitos más importantes por año</p>
-      </div>
-    </header>
-
-    <!-- Línea principal -->
-    <section class="main-timeline" id="timeline">
-      <div class="year-node" data-year="2023">2023</div>
-      <div class="year-node" data-year="2024">2024</div>
-      <div class="year-node" data-year="2025">2025</div>
-    </section>
-
-    <!-- Detalles -->
-    <section class="year-details" id="details-2023"><div class="events-line"></div></section>
-    <section class="year-details" id="details-2024"><div class="events-line"></div></section>
-    <section class="year-details" id="details-2025"><div class="events-line"></div></section>
-
-    <!-- Formulario -->
-    <section id="formulario">
-      <h2>Registrar nuevo hito</h2>
-      <form id="hitoForm">
-        <input type="date" id="fecha" required>
-        <input type="text" id="titulo" placeholder="Título" required>
-        <input type="text" id="detalle" placeholder="Detalle breve (máx 8 palabras)" required>
-        <textarea id="descripcion" placeholder="Descripción completa" rows="4" required></textarea>
-        <select id="tipo" required>
-          <option value="" disabled selected>Tipo de evento</option>
-          <option>Implementación</option>
-          <option>Incidente</option>
-          <option>Mejora</option>
-          <option>Otro</option>
-        </select>
-        <select id="impacto" required>
-          <option value="" disabled selected>Nivel de impacto</option>
-          <option>Alta</option>
-          <option>Media</option>
-          <option>Baja</option>
-        </select>
-        <input type="text" id="autor" placeholder="Autor" required>
-        <button type="submit">Guardar hito</button>
-      </form>
+  <!-- Panel lateral -->
+  <div id="sidePanel">
+    <div id="closePanel">✖</div>
+    <h2>Registrar nuevo hito</h2>
+    <form id="hitoForm">
+      <input type="date" id="fecha" required>
+      <input type="text" id="titulo" placeholder="Título" required>
+      <input type="text" id="detalle" placeholder="Detalle breve (máx 8 palabras)" required>
+      <textarea id="descripcion" placeholder="Descripción completa" rows="4" required></textarea>
+      <select id="tipo" required>
+        <option value="" disabled selected>Tipo de evento</option>
+        <option>Implementación</option>
+        <option>Incidente</option>
+        <option>Mejora</option>
+        <option>Otro</option>
+      </select>
+      <select id="impacto" required>
+        <option value="" disabled selected>Nivel de impacto</option>
+        <option>Alta</option>
+        <option>Media</option>
+        <option>Baja</option>
+      </select>
+      <input type="text" id="autor" placeholder="Autor" required>
+      <button type="submit" class="submit">Guardar hito</button>
       <p id="msg"></p>
-    </section>
+    </form>
+  </div>
 
-    <!-- Modal -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-close" id="closeModal">✖</div>
-        <h2 id="modalTitle"></h2>
-        <p id="modalDesc"></p>
-        <p id="modalExtra" style="margin-top:12px; font-size:0.9rem; color:#333;"></p>
-      </div>
+  <!-- Encabezado -->
+  <header class="hero">
+    <div class="hero-icon">
+      <img src="logo-gases.png" alt="Gases del Caribe" class="hero-logo" />
+      <div class="hero-line"></div>
     </div>
+    <div class="hero-text">
+      <h1>CAMINO GDC</h1>
+      <p>Explorá los hitos más importantes por año</p>
+    </div>
+  </header>
 
-    <script>
-      const nodes = document.querySelectorAll(".year-node");
-      const details = document.querySelectorAll(".year-details");
-      nodes.forEach(node => {
-        node.addEventListener("click", () => {
-          const year = node.dataset.year;
-          nodes.forEach(n => n.classList.remove("active"));
-          details.forEach(d => d.classList.remove("active"));
-          node.classList.add("active");
-          document.getElementById("details-" + year).classList.add("active");
-          document.getElementById("details-" + year)
-            .scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      });
+  <!-- Línea principal -->
+  <section class="main-timeline" id="timeline">
+    <div class="year-node" data-year="2023">2023</div>
+    <div class="year-node" data-year="2024">2024</div>
+    <div class="year-node" data-year="2025">2025</div>
+  </section>
 
-      const modal = document.getElementById("modal");
-      const closeModal = document.getElementById("closeModal");
-      closeModal.onclick = () => (modal.style.display = "none");
-      window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
-    </script>
+  <section class="year-details" id="details-2023"><div class="events-line"></div></section>
+  <section class="year-details" id="details-2024"><div class="events-line"></div></section>
+  <section class="year-details" id="details-2025"><div class="events-line"></div></section>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-close" id="closeModal">✖</div>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDesc"></p>
+      <p id="modalExtra" style="margin-top:12px;font-size:0.9rem;color:#333;"></p>
+    </div>
+  </div>
+
+  <script>
+    /* Interacción del panel lateral */
+    const sidePanel = document.getElementById("sidePanel");
+    document.getElementById("openFormBtn").onclick = () => sidePanel.classList.add("active");
+    document.getElementById("closePanel").onclick = () => sidePanel.classList.remove("active");
+
+    /* Navegación de años */
+    const nodes = document.querySelectorAll(".year-node");
+    const details = document.querySelectorAll(".year-details");
+    nodes.forEach(node => node.addEventListener("click", () => {
+      const year = node.dataset.year;
+      nodes.forEach(n => n.classList.remove("active"));
+      details.forEach(d => d.classList.remove("active"));
+      node.classList.add("active");
+      document.getElementById(details-${year}).classList.add("active");
+    }));
+
+    /* Modal */
+    const modal = document.getElementById("modal");
+    const closeModal = document.getElementById("closeModal");
+    closeModal.onclick = () => (modal.style.display = "none");
+    window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
 
     <!-- Conexión a Google Sheets -->
     <script>
-      const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-      const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // ⚠️ reemplazá con tu clave
-      const SHEET_NAME = "Hitos";
-
-      async function cargarHitosDesdeSheets() {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-          if (!data.values) return;
-          const valores = data.values.slice(1);
-
-          valores.forEach(row => {
-            const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
-            if (!fecha) return;
-            const year = new Date(fecha).getFullYear();
-            const contenedor = document.getElementById(details-${year});
-            if (!contenedor) return;
-
-            const evento = document.createElement("div");
-            evento.className = "event";
-            evento.innerHTML = `
-              <div class="date">${fecha}</div>
-              <h3>${titulo}</h3>
-              <p>${detalle}</p>
-              <p><b>Autor:</b> ${autor}</p>
-            `;
-            evento.addEventListener("click", () => {
-              document.getElementById("modalTitle").innerText = titulo;
-              document.getElementById("modalDesc").innerText = descripcion;
-              document.getElementById("modalExtra").innerHTML = `
-                <b>Fecha:</b> ${fecha}<br>
-                <b>Tipo:</b> ${tipo}<br>
-                <b>Impacto:</b> ${impacto}<br>
-                <b>Autor:</b> ${autor}
-              `;
-              modal.style.display = "flex";
-            });
-            contenedor.appendChild(evento);
-          });
-          console.log("✅ Hitos cargados correctamente.");
-        } catch (err) {
-          console.error("❌ Error cargando los datos:", err);
-        }
-      }
-
-      window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
-
-      /* ---- Formulario para agregar hitos ---- */
-      const FORM = document.getElementById("hitoForm");
-      const MSG = document.getElementById("msg");
-      FORM.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const nuevoHito = [
-          fecha.value, titulo.value, detalle.value, descripcion.value,
-          tipo.value, impacto.value, autor.value
-        ];
-        const url = https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:G:append?valueInputOption=USER_ENTERED&key=${API_KEY};
-        try {
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ values: [nuevoHito] })
-          });
-          if (res.ok) {
-            MSG.innerText = "✅ Hito guardado exitosamente.";
-            MSG.style.color = "#2e8b57";
-            FORM.reset();
-            cargarHitosDesdeSheets();
-          } else throw new Error(await res.text());
-        } catch (err) {
-          console.error(err);
-          MSG.innerText = "❌ Error al guardar el hito.";
-          MSG.style.color = "red";
-        }
+     const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+    const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+    const SHEET_NAME = "Hitos";
+ 
+    async function cargarHitosDesdeSheets() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.values) return;
+      const valores = data.values.slice(1);
+      valores.forEach(row => {
+        const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
+        if (!fecha) return;
+        const year = new Date(fecha).getFullYear();
+        const contenedor = document.getElementById(`details-${year}`);
+        if (!contenedor) return;
+        const evento = document.createElement("div");
+        evento.className = "event";
+        evento.innerHTML = `
+<div class="date">${fecha}</div>
+<h3>${titulo}</h3>
+<p>${detalle}</p>
+<p><b>Autor:</b> ${autor}</p>`;
+        evento.onclick = () => {
+          document.getElementById("modalTitle").innerText = titulo;
+          document.getElementById("modalDesc").innerText = descripcion;
+          document.getElementById("modalExtra").innerHTML = `
+<b>Fecha:</b> ${fecha}<br><b>Tipo:</b> ${tipo}<br><b>Impacto:</b> ${impacto}<br><b>Autor:</b> ${autor}`;
+          modal.style.display = "flex";
+        };
+        contenedor.appendChild(evento);
       });
-    </script>
-  </body>
+    }
+ 
+    window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
+ 
+    /* Envío de formulario */
+    const FORM = document.getElementById("hitoForm");
+    const MSG = document.getElementById("msg");
+    FORM.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nuevoHito = [
+        fecha.value, titulo.value, detalle.value, descripcion.value,
+        tipo.value, impacto.value, autor.value
+      ];
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A:G:append?valueInpu…
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ values: [nuevoHito] })
+        });
+        if (res.ok) {
+          MSG.innerText = "✅ Hito guardado exitosamente.";
+          MSG.style.color = "#2e8b57";
+          FORM.reset();
+          sidePanel.classList.remove("active");
+          cargarHitosDesdeSheets();
+        } else throw new Error(await res.text());
+      } catch (err) {
+        console.error(err);
+        MSG.innerText = "❌ Error al guardar el hito.";
+        MSG.style.color = "red";
+      }
+    });
+</script>
+</body>
 </html>
