@@ -302,9 +302,9 @@
     </script>
 
     <!-- 🔗 Conexión a Google Sheets -->
-   <script>
+  <script>
   const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // 
+  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; // ⚠️ poné tu clave actual aquí
   const SHEET_NAME = "Hitos";
  
   async function cargarHitosDesdeSheets() {
@@ -313,28 +313,27 @@
     try {
       const res = await fetch(url);
       const data = await res.json();
- 
       if (!data.values) {
         console.error("❌ No se encontraron datos en la hoja.");
         return;
       }
  
-      const valores = data.values.slice(1); // omite encabezado
+      const valores = data.values.slice(1); // omitir encabezado
  
       valores.forEach(row => {
-        const [fecha, titulo, descripcion, tipo, impacto, autor] = row;
+        const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
         if (!fecha) return;
  
         const year = new Date(fecha).getFullYear();
         const contenedor = document.getElementById(`details-${year}`);
-        if (!contenedor) return; // ignora años que no tengan contenedor
+        if (!contenedor) return;
  
         const evento = document.createElement("div");
         evento.className = "event";
         evento.innerHTML = `
 <div class="date">${fecha}</div>
 <h3>${titulo}</h3>
-<p>${descripcion}</p>
+<p>${detalle}</p>
 <p><b>Autor:</b> ${autor}</p>
         `;
  
@@ -354,7 +353,7 @@
         contenedor.appendChild(evento);
       });
  
-      console.log("✅ Hitos cargados correctamente desde Google Sheets.");
+      console.log("✅ Hitos cargados correctamente con detalle breve.");
     } catch (err) {
       console.error("❌ Error cargando los datos:", err);
     }
