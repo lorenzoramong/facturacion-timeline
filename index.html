@@ -308,7 +308,7 @@
       const SHEET_NAME = "Hitos";
 
       async function cargarHitosDesdeSheets() {
-        const url = https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY};
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
         try {
           const res = await fetch(url);
           const data = await res.json();
