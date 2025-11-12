@@ -12,7 +12,7 @@
         color: #222;
       }
  
-      /* ---- Encabezado con logo flotante y nuevo fondo degradado ---- */
+      /* ---- Encabezado con logo flotante y degradado ---- */
       .hero {
         display: flex;
         align-items: center;
@@ -215,42 +215,17 @@
 <div class="year-node" data-year="2025">2025</div>
 </section>
  
-    <!-- Detalles -->
+    <!-- Detalles (vacíos, se llenan dinámicamente) -->
 <section class="year-details" id="details-2023">
 <div class="events-line"></div>
-<div class="event">
-<div class="date">Abril 2023</div>
-<h3>Inicio de Facturación Electrónica</h3>
-<p>Implementación del nuevo proveedor de facturación electrónica.</p>
-</div>
 </section>
  
     <section class="year-details" id="details-2024">
 <div class="events-line"></div>
-<div class="event">
-<div class="date">Febrero 2024</div>
-<h3>Error en Sistema Externo</h3>
-<p>Falla del sistema de emisión que afectó temporalmente el ciclo.</p>
-</div>
-<div class="event">
-<div class="date">Septiembre 2024</div>
-<h3>Actualización de Plantillas</h3>
-<p>Rediseño de formatos de factura y reportes internos.</p>
-</div>
 </section>
  
     <section class="year-details" id="details-2025">
 <div class="events-line"></div>
-<div class="event">
-<div class="date">Enero 2025</div>
-<h3>Automatización de Reintentos</h3>
-<p>Automatización del flujo de reintentos para mejorar la eficiencia.</p>
-</div>
-<div class="event">
-<div class="date">Agosto 2025</div>
-<h3>Migración al Nuevo Servidor</h3>
-<p>Cambio de infraestructura hacia un entorno más estable y rápido.</p>
-</div>
 </section>
  
     <script>
@@ -268,6 +243,54 @@
             .scrollIntoView({ behavior: "smooth", block: "start" });
         });
       });
+</script>
+ 
+    <!-- 🔗 Conexión a Google Sheets -->
+<script>
+      const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+      const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+      const SHEET_NAME = "Hitos";
+ 
+      async function cargarHitosDesdeSheets() {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+ 
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+ 
+          if (!data.values) {
+            console.error("❌ No se encontraron datos en la hoja");
+            return;
+          }
+ 
+          const valores = data.values.slice(1); // omitir encabezado
+ 
+          valores.forEach(row => {
+            const [fecha, titulo, descripcion, tipo, impacto, autor] = row;
+            if (!fecha) return;
+ 
+            const year = new Date(fecha).getFullYear();
+            const contenedor = document.getElementById(`details-${year}`);
+            if (!contenedor) return; // si el año no existe, ignorar
+ 
+            const evento = document.createElement("div");
+            evento.className = "event";
+            evento.innerHTML = `
+<div class="date">${fecha}</div>
+<h3>${titulo}</h3>
+<p>${descripcion}</p>
+<p><b>Tipo:</b> ${tipo} | <b>Impacto:</b> ${impacto} | <b>Autor:</b> ${autor}</p>
+            `;
+            contenedor.appendChild(evento);
+          });
+ 
+          console.log("✅ Hitos cargados correctamente desde Google Sheets.");
+        } catch (err) {
+          console.error("❌ Error cargando los datos:", err);
+        }
+      }
+ 
+      window.addEventListener("DOMContentLoaded", cargarHitosDesdeSheets);
 </script>
 </body>
 </html>
