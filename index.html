@@ -243,44 +243,39 @@ FORM.addEventListener("submit", async (e) => {
   MSG.innerText = "Guardando...";
   MSG.style.color = "#0072bb";
  
-  try {
-    const payload = {
-      fecha: document.getElementById("fecha").value,
-      titulo: document.getElementById("titulo").value,
-      detalle: document.getElementById("detalle").value,
-      descripcion: document.getElementById("descripcion").value,
-      tipo: document.getElementById("tipo").value,
-      impacto: document.getElementById("impacto").value,
-      autor: document.getElementById("autor").value
-    };
+  const payload = {
+    fecha: document.getElementById("fecha").value,
+    titulo: document.getElementById("titulo").value,
+    detalle: document.getElementById("detalle").value,
+    descripcion: document.getElementById("descripcion").value,
+    tipo: document.getElementById("tipo").value,
+    impacto: document.getElementById("impacto").value,
+    autor: document.getElementById("autor").value
+  };
  
-    const res = await fetch(
+  try {
+    await fetch(
       "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        mode: "no-cors",          // ⬅️ clave: evita que CORS bloquee la petición
+        body: JSON.stringify(payload)  // sin headers personalizados
       }
     );
  
-    const json = await res.json();
- 
-    if (json.status !== "success") {
-      throw new Error("Error en Apps Script");
-    }
- 
-    MSG.innerText = "✅ Hito guardado correctamente";
+    // En modo no-cors no podemos leer la respuesta, asumimos éxito
+    MSG.innerText = "✅ Hito enviado. Verificá en la hoja Hitos.";
     MSG.style.color = "#2e8b57";
  
     FORM.reset();
     sidePanel.classList.remove("active");
  
-    // Recarga visual
+    // Recargamos lo que se ve en pantalla
     cargarHitosDesdeSheets();
  
   } catch (err) {
-    console.error(err);
-    MSG.innerText = "❌ Error al guardar el hito";
+    console.error("❌ Error al intentar enviar:", err);
+    MSG.innerText = "❌ Error al intentar enviar el hito.";
     MSG.style.color = "red";
   }
 });
