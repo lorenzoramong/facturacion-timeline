@@ -19,11 +19,11 @@
  
   .login-card {
     background: #ffffffcc;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     padding: 40px 35px;
     width: 330px;
     border-radius: 18px;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
     animation: fadeIn .6s ease;
   }
  
@@ -36,6 +36,8 @@
     text-align: center;
     color: #0072bb;
     margin-bottom: 25px;
+    font-weight: 700;
+    letter-spacing: -.3px;
   }
  
   input {
@@ -50,7 +52,7 @@
   input:focus {
     outline: none;
     border-color: #0072bb;
-    box-shadow: 0 0 0 2px rgba(0,114,187,.2);
+    box-shadow: 0 0 0 2px rgba(0,114,187,.25);
   }
  
   #loginBtn {
@@ -70,7 +72,7 @@
   }
  
   #msg {
-    margin-top: 10px;
+    margin-top: 12px;
     text-align: center;
     font-size: 0.9rem;
     font-weight: 600;
@@ -91,15 +93,16 @@
   <p id="msg"></p>
 </div>
  
+<!-- ⚡ Cargar bcrypt ANTES del script principal -->
 <script src="https://cdn.jsdelivr.net/npm/bcryptjs/dist/bcrypt.min.js"></script>
  
 <script>
+  /* CONFIGURACIÓN */
   const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; 
+  const API_KEY  = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";   /* ← poné tu API KEY aquí */
   const SHEET_NAME = "Usuarios";
  
   const msg = document.getElementById("msg");
- 
   document.getElementById("loginBtn").addEventListener("click", iniciarSesion);
  
   async function iniciarSesion() {
@@ -116,6 +119,7 @@
     }
  
     try {
+      /* Consultar Google Sheets */
       const url =
         `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
  
@@ -128,7 +132,7 @@
         return;
       }
  
-      // Buscar usuario
+      /* Buscar usuario */
       const usuarios = data.values.slice(1);
       const user = usuarios.find(row => row[0].toLowerCase() === correo);
  
@@ -140,7 +144,7 @@
  
       const [uCorreo, uNombre, hashClave, rol] = user;
  
-      // Comparar contraseña
+      /* Comparar contraseña */
       const ok = await bcrypt.compare(claveIngresada, hashClave);
  
       if (!ok) {
@@ -149,11 +153,11 @@
         return;
       }
  
-      // Guardar sesión
+      /* Guardar sesión */
       localStorage.setItem("usuarioGDC", JSON.stringify({
         correo: uCorreo,
         nombre: uNombre,
-        rol: rol
+        rol
       }));
  
       msg.textContent = "Ingresando...";
@@ -161,7 +165,7 @@
  
       setTimeout(() => {
         window.location.href = "index.html";
-      }, 800);
+      }, 700);
  
     } catch (error) {
       msg.textContent = "Error en el inicio de sesión";
