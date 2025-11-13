@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iniciar sesión – CAMINO GDC</title>
+ 
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #eaf6ff, #d3f7e4);
+    font-family: "Inter", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+ 
+  .login-card {
+    background: #ffffffcc;
+    backdrop-filter: blur(10px);
+    padding: 40px 35px;
+    width: 330px;
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+    animation: fadeIn .6s ease;
+  }
+ 
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+ 
+  h2 {
+    text-align: center;
+    color: #0072bb;
+    margin-bottom: 25px;
+  }
+ 
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    border: 1px solid #cdd9e1;
+    font-size: 0.95rem;
+  }
+ 
+  input:focus {
+    outline: none;
+    border-color: #0072bb;
+    box-shadow: 0 0 0 2px rgba(0,114,187,.2);
+  }
+ 
+  #loginBtn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #0072bb, #7cc242);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+ 
+  #loginBtn:hover {
+    transform: scale(1.03);
+  }
+ 
+  #msg {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+</style>
+</head>
+ 
+<body>
+ 
+<div class="login-card">
+<h2>CAMINO GDC</h2>
+ 
+  <input type="email" id="correo" placeholder="Correo" required />
+<input type="password" id="clave" placeholder="Contraseña" required />
+ 
+  <button id="loginBtn">Ingresar</button>
+ 
+  <p id="msg"></p>
+</div>
+ 
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs/dist/bcrypt.min.js"></script>
+ 
+<script>
+  const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+  const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ"; 
+  const SHEET_NAME = "Usuarios";
+ 
+  const msg = document.getElementById("msg");
+ 
+  document.getElementById("loginBtn").addEventListener("click", iniciarSesion);
+ 
+  async function iniciarSesion() {
+    msg.textContent = "Verificando...";
+    msg.style.color = "#0072bb";
+ 
+    const correo = document.getElementById("correo").value.trim().toLowerCase();
+    const claveIngresada = document.getElementById("clave").value;
+ 
+    if (!correo || !claveIngresada) {
+      msg.textContent = "Completa todos los campos";
+      msg.style.color = "red";
+      return;
+    }
+ 
+    try {
+      const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+ 
+      const res = await fetch(url);
+      const data = await res.json();
+ 
+      if (!data.values) {
+        msg.textContent = "Error cargando usuarios";
+        msg.style.color = "red";
+        return;
+      }
+ 
+      // Buscar usuario
+      const usuarios = data.values.slice(1);
+      const user = usuarios.find(row => row[0].toLowerCase() === correo);
+ 
+      if (!user) {
+        msg.textContent = "Usuario no encontrado";
+        msg.style.color = "red";
+        return;
+      }
+ 
+      const [uCorreo, uNombre, hashClave, rol] = user;
+ 
+      // Comparar contraseña
+      const ok = await bcrypt.compare(claveIngresada, hashClave);
+ 
+      if (!ok) {
+        msg.textContent = "Contraseña incorrecta";
+        msg.style.color = "red";
+        return;
+      }
+ 
+      // Guardar sesión
+      localStorage.setItem("usuarioGDC", JSON.stringify({
+        correo: uCorreo,
+        nombre: uNombre,
+        rol: rol
+      }));
+ 
+      msg.textContent = "Ingresando...";
+      msg.style.color = "green";
+ 
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 800);
+ 
+    } catch (error) {
+      msg.textContent = "Error en el inicio de sesión";
+      msg.style.color = "red";
+      console.error(error);
+    }
+  }
+</script>
+ 
+</body>
+</html>
