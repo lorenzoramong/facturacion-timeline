@@ -214,7 +214,11 @@
 </div>
 <!-- SCRIPT PRINCIPAL -->
 <script>
- 
+
+ const sesion = JSON.parse(localStorage.getItem("usuarioGDC"));
+if (!sesion) {
+  window.location.href = "login.html";
+}
     /* CONFIGURACIÓN */
     const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
     const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";  // <-- CAMBIAR
