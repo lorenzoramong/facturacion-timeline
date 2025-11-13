@@ -177,13 +177,55 @@ window.addEventListener("DOMContentLoaded", () => {
   /* -------------------------
       CARGAR HITOS DESDE SHEETS
   ------------------------- */
-  async function cargarHitosDesdeSheets() {
-    try {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
+function construirAniosDinamicos(listaDeAnios) {
+  const timeline = document.getElementById("timeline");
  
-      if (!data.values) return;
+  // Limpia cualquier año anterior
+  timeline.innerHTML = "";
+ 
+  listaDeAnios.forEach(year => {
+    const nodo = document.createElement("div");
+    nodo.className = "year-node";
+    nodo.dataset.year = year;
+    nodo.innerText = year;
+ 
+    nodo.addEventListener("click", () => activateYear(year));
+ 
+    timeline.appendChild(nodo);
+  });
+ 
+  // Crear las secciones dinámicamente
+  const contenedorPrincipal = document.body;
+ 
+  // Eliminar los anteriores
+  document.querySelectorAll(".year-details").forEach(e => e.remove());
+ 
+  listaDeAnios.forEach(year => {
+    const section = document.createElement("section");
+    section.className = "year-details";
+    section.id = `details-${year}`;
+    section.innerHTML = `<div class="events-line"></div>`;
+    contenedorPrincipal.appendChild(section);
+  });
+}
+    
+async function cargarHitosDesdeSheets() {
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+ 
+    if (!data.values) return;
+ 
+    const filas = data.values.slice(1);
+ 
+    // 🔥 EXTRAER AÑOS DINÁMICOS
+    const anios = [...new Set(
+      filas.map(f => new Date(f[0]).getFullYear())
+    )].sort();
+ 
+    // 🔥 CONSTRUIR TIMELINE DINÁMICO
+    construirAniosDinamicos(anios);
  
       // Reset visual de todos los años
       yearDetails.forEach(d => {
