@@ -85,11 +85,12 @@
   .main-timeline::before {
     content: "";
     position: absolute;
-    top: 50%;
+    top: 58%; /* CORREGIDO PARA QUE LA LÍNEA BAJE */
     left: 5%;
     right: 5%;
     height: 4px;
     background: linear-gradient(90deg, #0072bb, #7cc242);
+    z-index: 0;
   }
  
   .year-node {
@@ -104,6 +105,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: .25s;
+    z-index: 2; /* ENCIMA DE LA LÍNEA */
   }
  
   .year-node.active {
@@ -215,7 +217,9 @@
     margin-bottom: 10px;
   }
  
-  #sidePanel input, #sidePanel textarea, #sidePanel select {
+  #sidePanel input,
+  #sidePanel textarea,
+  #sidePanel select {
     width: 100%;
     margin-bottom: 12px;
     padding: 10px;
@@ -231,6 +235,17 @@
     border: none;
     cursor: pointer;
     border-radius: 8px;
+  }
+ 
+  /* X para cerrar panel */
+  #closePanel {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #0072bb;
+    font-weight: 600;
   }
  
   /* Modal */
@@ -267,11 +282,19 @@
  
 <!-- Filtros -->
 <div class="filters">
-<select id="filterType">
+ 
+  <select id="filterType">
 <option value="">Tipo</option>
-<option value="Implementación">Implementación</option>
-<option value="Incidente">Incidente</option>
-<option value="Mejora">Mejora</option>
+<option value="implementación">Implementación</option>
+<option value="incidente">Incidente</option>
+<option value="mejora">Mejora</option>
+</select>
+ 
+  <select id="filterImpact">
+<option value="">Impacto</option>
+<option value="alto">Alto</option>
+<option value="medio">Medio</option>
+<option value="bajo">Bajo</option>
 </select>
  
   <input id="filterKeyword" placeholder="Buscar..." />
@@ -280,7 +303,7 @@
 <!-- Línea de tiempo -->
 <section class="main-timeline" id="timeline"></section>
  
-<!-- Detalles dinámicos -->
+<!-- Contenedores dinámicos -->
 <div id="yearDetailContainer"></div>
  
 <!-- Botón flotante -->
@@ -289,6 +312,8 @@
 <!-- Panel lateral -->
 <div id="sidePanel">
 <h2>Crear Hito</h2>
+ 
+  <div id="closePanel">✖</div>
  
   <input id="dateInput" type="date" />
  
@@ -332,167 +357,277 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
  
 <script>
-/* 🔥 CONFIG DE FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
-  authDomain: "camino-gdc.firebaseapp.com",
-  projectId: "camino-gdc",
-  storageBucket: "camino-gdc.firebasestorage.app",
-  messagingSenderId: "1053392006260",
-  appId: "1:1053392006260:web:8c39450408566f14987521"
-};
+  /* 🔥 CONFIG DE FIREBASE */
+  const firebaseConfig = {
+    apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
+    authDomain: "camino-gdc.firebaseapp.com",
+    projectId: "camino-gdc",
+    storageBucket: "camino-gdc.firebasestorage.app",
+    messagingSenderId: "1053392006260",
+    appId: "1:1053392006260:web:8c39450408566f14987521"
+  };
  
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
  
-auth.onAuthStateChanged(user => {
-  if (!user) window.location.href = "login.html";
-});
+  auth.onAuthStateChanged(user => {
+    if (!user) window.location.href = "login.html";
+  });
 </script>
  
 <!-- LÓGICA PRINCIPAL -->
 <script>
-const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
-const SHEET_NAME = "Hitos";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec";
+  /* CONFIG GOOGLE SHEETS / APPS SCRIPT */
+  const SHEET_ID   = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+  const API_KEY    = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+  const SHEET_NAME = "Hitos";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec%22;
  
-/* Construir años según Sheets */
-async function construirAnios() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (!data.values) return;
+  /* REFERENCIAS DOM */
+  const timeline            = document.getElementById("timeline");
+  const yearDetailContainer = document.getElementById("yearDetailContainer");
  
-  const rows = data.values.slice(1);
-  const years = [...new Set(rows.map(r => new Date(r[0]).getFullYear()))];
+  const filterType    = document.getElementById("filterType");
+  const filterImpact  = document.getElementById("filterImpact");
+  const filterKeyword = document.getElementById("filterKeyword");
  
-  const timeline = document.getElementById("timeline");
-  timeline.innerHTML = "";
+  const openPanelBtn = document.getElementById("openPanelBtn");
+  const sidePanel    = document.getElementById("sidePanel");
+  const closePanel   = document.getElementById("closePanel");
+  const submitHito   = document.getElementById("submitHito");
  
-  years.forEach(y => {
-    const el = document.createElement("div");
-    el.className = "year-node";
-    el.dataset.year = y;
-    el.textContent = y;
-    timeline.appendChild(el);
-  });
+  /* MODAL */
+  const modal      = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalDate  = document.getElementById("modalDate");
+  const modalDesc  = document.getElementById("modalDesc");
+  const modalExtra = document.getElementById("modalExtra");
  
-  const container = document.getElementById("yearDetailContainer");
-  container.innerHTML = "";
-  years.forEach(y => {
-    container.innerHTML += `<section class="year-details" id="details-${y}">
-<div class="events-line"></div>
-</section>`;
-  });
+  /* ============================
+     1. Construir años dinámicos
+  ============================ */
+  async function construirAnios() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.values) return;
  
-  activarClicksAnios();
-  cargarHitos();
-}
+    const rows = data.values.slice(1); // quitar encabezados
+    const yearsSet = new Set();
  
-/* Activar click por año */
-function activarClicksAnios() {
-  const nodes = document.querySelectorAll(".year-node");
-  const details = document.querySelectorAll(".year-details");
+    rows.forEach(r => {
+      const fecha = r[0];
+      if (!fecha) return;
+      const year = new Date(fecha).getFullYear();
+      if (!isNaN(year)) yearsSet.add(year);
+    });
  
-  nodes.forEach(n => {
-    n.onclick = () => {
-      nodes.forEach(x => x.classList.remove("active"));
-      details.forEach(d => d.classList.remove("active"));
-      n.classList.add("active");
-      document.getElementById("details-"+n.dataset.year).classList.add("active");
-    };
-  });
-}
+    const years = Array.from(yearsSet).sort((a, b) => a - b);
  
-/* Cargar hitos */
-async function cargarHitos() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (!data.values) return;
+    timeline.innerHTML = "";
+    yearDetailContainer.innerHTML = "";
  
-  const rows = data.values.slice(1);
+    years.forEach(year => {
+      // Nodo de año
+      const node = document.createElement("div");
+      node.className = "year-node";
+      node.dataset.year = year;
+      node.textContent = year;
+      timeline.appendChild(node);
  
-  rows.forEach(r => {
-    const [fecha,titulo,detalle,descripcion,tipo,impacto,autor] = r;
-    const y = new Date(fecha).getFullYear();
-    const cont = document.getElementById("details-"+y);
-    if (!cont) return;
+      // Contenedor de eventos del año
+      const section = document.createElement("section");
+      section.className = "year-details";
+      section.id = `details-${year}`;
+      section.innerHTML = `<div class="events-line"></div>`;
+      yearDetailContainer.appendChild(section);
+    });
  
-    const el = document.createElement("div");
-    el.className = "event";
+    activarClicksAnios();
+    cargarHitos();
+  }
  
-    el.setAttribute("data-type", tipo.toLowerCase());
-    el.setAttribute("data-key", (titulo+" "+detalle+" "+descripcion).toLowerCase());
+  /* ============================
+     2. Activar click en años
+  ============================ */
+  function activarClicksAnios() {
+    const nodes   = document.querySelectorAll(".year-node");
+    const details = document.querySelectorAll(".year-details");
  
-    el.innerHTML = `
+    nodes.forEach(node => {
+      node.onclick = () => {
+        nodes.forEach(n => n.classList.remove("active"));
+        details.forEach(d => d.classList.remove("active"));
+ 
+        node.classList.add("active");
+        const target = document.getElementById(`details-${node.dataset.year}`);
+        if (target) target.classList.add("active");
+      };
+    });
+  }
+ 
+  /* ============================
+     3. Cargar hitos desde Sheets
+  ============================ */
+  async function cargarHitos() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.values) return;
+ 
+    const rows = data.values.slice(1);
+ 
+    rows.forEach(r => {
+      const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = r;
+ 
+      if (!fecha || !titulo) return;
+ 
+      const year = new Date(fecha).getFullYear();
+      const cont = document.getElementById(`details-${year}`);
+      if (!cont) return;
+ 
+      const tipoLower    = (tipo || "").toLowerCase();
+      const impactoLower = (impacto || "").toLowerCase();
+      const searchText   = `
+        ${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}
+      `.toLowerCase();
+ 
+      const el = document.createElement("div");
+      el.className = "event";
+ 
+      el.dataset.type   = tipoLower;
+      el.dataset.impact = impactoLower;
+      el.dataset.key    = searchText;
+ 
+      el.innerHTML = `
 <div class="date">${fecha}</div>
 <h3>${titulo}</h3>
-<p>${detalle}</p>
+<p>${detalle || ""}</p>
+      `;
+ 
+      el.onclick = () =>
+        abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
+ 
+      cont.appendChild(el);
+    });
+ 
+    aplicarFiltros(); // aplicar filtros iniciales (por si hay algo)
+  }
+ 
+  /* ============================
+     4. Modal de detalle
+  ============================ */
+  function abrirModal(t, f, d, tipo, impacto, autor) {
+    modalTitle.textContent = t;
+    modalDate.textContent  = f;
+    modalDesc.textContent  = d || "";
+    modalExtra.innerHTML   = `
+<b>Tipo:</b> ${tipo || ""}<br>
+<b>Impacto:</b> ${impacto || ""}<br>
+<b>Autor:</b> ${autor || ""}<br>
     `;
  
-    el.onclick = () => abrirModal(titulo,fecha,descripcion,tipo,impacto,autor);
-    cont.appendChild(el);
-  });
-}
+    modal.style.display = "flex";
+  }
  
-/* Modal */
-function abrirModal(t,f,d,tipo,i,a) {
-  modal.style.display = "flex";
-  modalTitle.textContent = t;
-  modalDate.textContent = f;
-  modalDesc.textContent = d;
-  modalExtra.innerHTML = `
-<b>Tipo:</b> ${tipo}<br>
-<b>Impacto:</b> ${i}<br>
-<b>Autor:</b> ${a}
-  `;
- 
-  modal.onclick = e => { if(e.target.id==="modal") modal.style.display="none"; };
-}
- 
-/* Abrir panel */
-openPanelBtn.onclick = () => sidePanel.classList.add("open");
-document.addEventListener("keydown", e => { if(e.key==="Escape") sidePanel.classList.remove("open"); });
- 
-/* Guardar hito */
-submitHito.onclick = async () => {
-  const obj = {
-    fecha: dateInput.value,
-    titulo: titleInput.value,
-    detalle: detailInput.value,
-    descripcion: descriptionInput.value,
-    tipo: typeInput.value,
-    impacto: impactInput.value,
-    autor: authorInput.value
+  modal.onclick = e => {
+    if (e.target === modal) modal.style.display = "none";
   };
  
-  await fetch(SCRIPT_URL, {
-    method:"POST",
-    body: JSON.stringify(obj)
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      modal.style.display = "none";
+      sidePanel.classList.remove("open");
+    }
   });
  
-  alert("Hito guardado ✔");
-  location.reload();
-};
+  /* ============================
+     5. Filtros (tipo + impacto + texto)
+  ============================ */
+  function aplicarFiltros() {
+    const typeFilter   = (filterType.value   || "").toLowerCase();
+    const impactFilter = (filterImpact.value || "").toLowerCase();
+    const textFilter   = (filterKeyword.value || "").toLowerCase();
  
-/* Filtros */
-document.getElementById("filterType").onchange =
-document.getElementById("filterKeyword").oninput = filtrar;
+    const eventos = document.querySelectorAll(".event");
  
-function filtrar() {
-  const type = filterType.value.toLowerCase();
-  const key = filterKeyword.value.toLowerCase();
+    eventos.forEach(ev => {
+      const tipoEv    = ev.dataset.type   || "";
+      const impactEv  = ev.dataset.impact || "";
+      const searchEv  = ev.dataset.key    || "";
  
-  document.querySelectorAll(".event").forEach(e => {
-    const matchType = !type || e.dataset.type.includes(type);
-    const matchKey  = !key || e.dataset.key.includes(key);
-    e.style.display = matchType && matchKey ? "" : "none";
-  });
-}
+      const coincideTipo   = !typeFilter   || tipoEv === typeFilter;
+      const coincideImpact = !impactFilter || impactEv === impactFilter;
+      const coincideTexto  = !textFilter   || searchEv.includes(textFilter);
  
-window.onload = construirAnios;
+      ev.style.display = (coincideTipo && coincideImpact && coincideTexto)
+        ? "block"
+        : "none";
+    });
+  }
+ 
+  filterType.onchange    = aplicarFiltros;
+  filterImpact.onchange  = aplicarFiltros;
+  filterKeyword.oninput  = aplicarFiltros;
+ 
+  /* ============================
+     6. Panel lateral (+ y ✖)
+  ============================ */
+  openPanelBtn.onclick = () => {
+    sidePanel.classList.add("open");
+  };
+ 
+  closePanel.onclick = () => {
+    sidePanel.classList.remove("open");
+  };
+ 
+  /* ============================
+     7. Guardar hito en Apps Script
+  ============================ */
+  submitHito.onclick = async () => {
+    const fecha       = document.getElementById("dateInput").value;
+    const titulo      = document.getElementById("titleInput").value;
+    const detalle     = document.getElementById("detailInput").value;
+    const descripcion = document.getElementById("descriptionInput").value;
+    const tipo        = document.getElementById("typeInput").value;
+    const impacto     = document.getElementById("impactInput").value;
+    const autor       = document.getElementById("authorInput").value;
+ 
+    if (!fecha || !titulo) {
+      alert("La fecha y el título son obligatorios.");
+      return;
+    }
+ 
+    const payload = {
+      fecha,
+      titulo,
+      detalle,
+      descripcion,
+      tipo,
+      impacto,
+      autor
+    };
+ 
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+ 
+      if (!res.ok) throw new Error("No se pudo guardar el hito");
+ 
+      alert("Hito guardado ✔");
+      location.reload();
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar el hito.");
+    }
+  };
+ 
+  /* ============================
+     8. Inicialización
+  ============================ */
+  window.onload = construirAnios;
 </script>
  
 </body>
