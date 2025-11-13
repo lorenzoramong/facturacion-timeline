@@ -93,82 +93,45 @@
   <p id="msg"></p>
 </div>
  
-<!-- 🚨 Bcrypt temporal que siempre funciona sin CDN -->
-<script>
-window.bcrypt = {
-  compare: async function() {
-    return true; // temporal: acepta cualquier contraseña
-  },
-  compareSync: function() {
-    return true;
-  }
-};
-</script>
+<!-- Firebase SDK (compat, simple de usar) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
  
-<!-- 💻 SCRIPT PRINCIPAL DEL LOGIN -->
 <script>
-  /* CONFIGURACIÓN */
-  const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-  const API_KEY  = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";   /* ← poné tu API KEY aquí */
-  const SHEET_NAME = "Usuarios";
+  // 🚨 Pega aquí tu configuración REAL de Firebase:
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
+ 
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
  
   const msg = document.getElementById("msg");
-  document.getElementById("loginBtn").addEventListener("click", iniciarSesion);
+  const loginBtn = document.getElementById("loginBtn");
+ 
+  loginBtn.addEventListener("click", iniciarSesion);
  
   async function iniciarSesion() {
     msg.textContent = "Verificando...";
     msg.style.color = "#0072bb";
  
-    const correo = document.getElementById("correo").value.trim().toLowerCase();
-    const claveIngresada = document.getElementById("clave").value;
+    const correo = document.getElementById("correo").value.trim();
+    const clave = document.getElementById("clave").value;
  
-    if (!correo || !claveIngresada) {
+    if (!correo || !clave) {
       msg.textContent = "Completa todos los campos";
       msg.style.color = "red";
       return;
     }
  
     try {
-      /* Consultar Google Sheets */
-      const url =
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
- 
-      const res = await fetch(url);
-      const data = await res.json();
- 
-      if (!data.values) {
-        msg.textContent = "Error cargando usuarios";
-        msg.style.color = "red";
-        return;
-      }
- 
-      /* Buscar usuario */
-      const usuarios = data.values.slice(1);
-      const user = usuarios.find(row => row[0].toLowerCase() === correo);
- 
-      if (!user) {
-        msg.textContent = "Usuario no encontrado";
-        msg.style.color = "red";
-        return;
-      }
- 
-      const [uCorreo, uNombre, hashClave, rol] = user;
- 
-      /* Validación con bcrypt temporal */
-      const ok = await bcrypt.compare(claveIngresada, hashClave);
- 
-      if (!ok) {
-        msg.textContent = "Contraseña incorrecta";
-        msg.style.color = "red";
-        return;
-      }
- 
-      /* Guardar sesión */
-      localStorage.setItem("usuarioGDC", JSON.stringify({
-        correo: uCorreo,
-        nombre: uNombre,
-        rol
-      }));
+      const cred = await auth.signInWithEmailAndPassword(correo, clave);
  
       msg.textContent = "Ingresando...";
       msg.style.color = "green";
@@ -176,13 +139,26 @@ window.bcrypt = {
       setTimeout(() => {
         window.location.href = "index.html";
       }, 700);
- 
     } catch (error) {
-      msg.textContent = "Error en el inicio de sesión";
-      msg.style.color = "red";
       console.error(error);
+      let texto = "Error en el inicio de sesión";
+ 
+      if (error.code === "auth/user-not-found") texto = "Usuario no encontrado";
+      if (error.code === "auth/wrong-password") texto = "Contraseña incorrecta";
+      if (error.code === "auth/invalid-email") texto = "Correo inválido";
+      if (error.code === "auth/too-many-requests") texto = "Demasiados intentos, espera un momento";
+ 
+      msg.textContent = texto;
+      msg.style.color = "red";
     }
   }
+ 
+  // Si ya está logueado, redirigir directo a index
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      window.location.href = "index.html";
+    }
+  });
 </script>
  
 </body>
