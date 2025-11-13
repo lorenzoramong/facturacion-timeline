@@ -40,6 +40,53 @@
     #msg{text-align:center;font-weight:600;margin-top:10px}
  
     /* ------------------------------
+         PANEL DE FILTROS IZQUIERDA
+    ------------------------------ */
+    #filterPanel {
+      position: fixed;
+      top: 200px;
+      left: 40px;
+      width: 230px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 8;
+    }
+ 
+    .filter-card {
+      background: #ffffffcc;
+      backdrop-filter: blur(8px);
+      border: 1px solid #e3e9ef;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+ 
+    .filter-card label {
+      font-size: 0.85rem;
+      color: #0072bb;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+ 
+    .filter-card select,
+    .filter-card input {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f4f7fa;
+      font-size: 0.9rem;
+      color: #333;
+      outline: none;
+    }
+ 
+    .filter-card input::placeholder {
+      color: #999;
+    }
+ 
+    /* ------------------------------
          TIMELINE PRINCIPAL
     ------------------------------ */
     .main-timeline{display:flex;justify-content:center;align-items:center;gap:80px;position:relative;margin:80px auto;padding:0 40px;max-width:1000px}
@@ -72,13 +119,13 @@
  
   </style>
 </head>
- 
-<body>
+
+ <body>
  
   <!-- BOTÓN FLOTANTE -->
 <button id="openFormBtn" title="Nuevo hito">＋</button>
  
-  <!-- PANEL LATERAL -->
+  <!-- PANEL LATERAL CREAR HITO -->
 <aside id="sidePanel">
 <div id="closePanel">✖</div>
 <h2>Registrar nuevo hito</h2>
@@ -124,6 +171,35 @@
 </div>
 </header>
  
+  <!-- FILTROS PREMIUM -->
+<aside id="filterPanel">
+<div class="filter-card">
+<label>Tipo</label>
+<select id="filterTipo">
+<option value="">Todos</option>
+<option>Implementación</option>
+<option>Incidente</option>
+<option>Mejora</option>
+<option>Otro</option>
+</select>
+</div>
+ 
+    <div class="filter-card">
+<label>Impacto</label>
+<select id="filterImpacto">
+<option value="">Todos</option>
+<option>Alta</option>
+<option>Media</option>
+<option>Baja</option>
+</select>
+</div>
+ 
+    <div class="filter-card">
+<label>Buscar</label>
+<input id="filterSearch" type="text" placeholder="Buscar…">
+</div>
+</aside>
+ 
   <!-- TIMELINE -->
 <section class="main-timeline" id="timeline"></section>
  
@@ -136,13 +212,12 @@
 <p id="modalExtra" style="margin-top:12px;font-size:.9rem;color:#333;"></p>
 </div>
 </div>
- 
-  <!-- SCRIPT PRINCIPAL -->
+<!-- SCRIPT PRINCIPAL -->
 <script>
  
     /* CONFIGURACIÓN */
     const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-    const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+    const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";  // <-- CAMBIAR
     const SHEET_NAME = "Hitos";
  
     const openFormBtn = document.getElementById("openFormBtn");
@@ -153,10 +228,7 @@
     const modal = document.getElementById("modal");
     const closeModal = document.getElementById("closeModal");
  
- 
-    /* -------------------------------------------------------------
-        ABRIR/CERRAR PANEL LATERAL
-    ------------------------------------------------------------- */
+    /* PANEL LATERAL */
     openFormBtn.addEventListener("click", () => sidePanel.classList.add("active"));
     closePanel.addEventListener("click", () => sidePanel.classList.remove("active"));
  
@@ -165,9 +237,9 @@
     window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
  
  
-    /* -------------------------------------------------------------
-        CREAR AÑOS DINÁMICAMENTE
-    ------------------------------------------------------------- */
+    /* ===========================================================
+          CREAR AÑOS DINÁMICOS
+    ============================================================ */
     function construirAniosDinamicos(listaDeAnios) {
       const timeline = document.getElementById("timeline");
  
@@ -194,9 +266,7 @@
     }
  
  
-    /* -------------------------------------------------------------
-        ACTIVAR AÑO
-    ------------------------------------------------------------- */
+    /* ACTIVAR AÑO */
     function activateYear(year) {
       const timelineNodes = document.querySelectorAll(".year-node");
       const yearDetails = document.querySelectorAll(".year-details");
@@ -209,13 +279,16 @@
         d.classList.toggle("active", d.id === `details-${year}`)
       );
     }
-/* -------------------------------------------------------------
-        CARGAR HITOS DESDE GOOGLE SHEETS
-    ------------------------------------------------------------- */
+ 
+ 
+    /* ===========================================================
+          CARGAR HITOS DESDE GOOGLE SHEETS
+    ============================================================ */
     async function cargarHitosDesdeSheets() {
       try {
         const url =
           `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+ 
         const res = await fetch(url);
         const data = await res.json();
  
@@ -270,9 +343,9 @@
     }
  
  
-    /* -------------------------------------------------------------
-        GUARDAR HITO VIA APP SCRIPT (NO-CORS)
-    ------------------------------------------------------------- */
+    /* ===========================================================
+          GUARDAR HITO VIA APP SCRIPT
+    ============================================================ */
     FORM.addEventListener("submit", async (e) => {
       e.preventDefault();
  
@@ -314,13 +387,47 @@
     });
  
  
-    /* -------------------------------------------------------------
-        CARGA INICIAL
-    ------------------------------------------------------------- */
+    /* ===========================================================
+          FILTROS PREMIUM
+    ============================================================ */
+    const filterTipo = document.getElementById("filterTipo");
+    const filterImpacto = document.getElementById("filterImpacto");
+    const filterSearch = document.getElementById("filterSearch");
+ 
+    function aplicarFiltros() {
+      const t = filterTipo.value.toLowerCase();
+      const i = filterImpacto.value.toLowerCase();
+      const s = filterSearch.value.toLowerCase();
+ 
+      const eventos = document.querySelectorAll(".event");
+ 
+      eventos.forEach(evento => {
+        const txt = evento.innerText.toLowerCase();
+ 
+        const coincideTipo = t === "" || txt.includes(t);
+        const coincideImpacto = i === "" || txt.includes(i);
+        const coincideSearch = s === "" || txt.includes(s);
+ 
+        evento.style.display =
+          coincideTipo && coincideImpacto && coincideSearch
+            ? "block"
+            : "none";
+      });
+    }
+ 
+    filterTipo.addEventListener("change", aplicarFiltros);
+    filterImpacto.addEventListener("change", aplicarFiltros);
+    filterSearch.addEventListener("input", aplicarFiltros);
+ 
+ 
+    /* ===========================================================
+          CARGA INICIAL
+    ============================================================ */
     window.addEventListener("DOMContentLoaded", () => {
       cargarHitosDesdeSheets();
     });
  
   </script>
+ 
 </body>
 </html>
