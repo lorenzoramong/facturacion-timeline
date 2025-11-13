@@ -311,14 +311,21 @@
  
           if (!contenedor) return;
  
-          const evento = document.createElement("div");
-          evento.className = "event";
-          evento.innerHTML = `
+       const evento = document.createElement("div");
+evento.className = "event";
+ 
+evento.dataset.tipo = (tipo || "").toLowerCase();
+evento.dataset.impacto = (impacto || "").toLowerCase();
+evento.dataset.search = `
+  ${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}
+`.toLowerCase();
+ 
+evento.innerHTML = `
 <div class="date">${fecha}</div>
 <h3>${titulo}</h3>
 <p>${detalle || ""}</p>
 <p><b>Autor:</b> ${autor || ""}</p>
-          `;
+`;
  
           evento.addEventListener("click", () => {
             document.getElementById("modalTitle").innerText = titulo || "";
@@ -394,30 +401,32 @@
     const filterImpacto = document.getElementById("filterImpacto");
     const filterSearch = document.getElementById("filterSearch");
  
-    function aplicarFiltros() {
-      const t = filterTipo.value.toLowerCase();
-      const i = filterImpacto.value.toLowerCase();
-      const s = filterSearch.value.toLowerCase();
+   function aplicarFiltros() {
+  const tipoFiltro = filterTipo.value.toLowerCase();
+  const impactoFiltro = filterImpacto.value.toLowerCase();
+  const textoFiltro = filterSearch.value.toLowerCase();
  
-      const eventos = document.querySelectorAll(".event");
+  const eventos = document.querySelectorAll(".event");
  
-      eventos.forEach(evento => {
-        const txt = evento.innerText.toLowerCase();
+  eventos.forEach(evento => {
+    const tipo = evento.dataset.tipo;
+    const impacto = evento.dataset.impacto;
+    const search = evento.dataset.search;
  
-        const coincideTipo = t === "" || txt.includes(t);
-        const coincideImpacto = i === "" || txt.includes(i);
-        const coincideSearch = s === "" || txt.includes(s);
+    const coincideTipo = tipoFiltro === "" || tipo === tipoFiltro;
+    const coincideImpacto = impactoFiltro === "" || impacto === impactoFiltro;
+    const coincideTexto = textoFiltro === "" || search.includes(textoFiltro);
  
-        evento.style.display =
-          coincideTipo && coincideImpacto && coincideSearch
-            ? "block"
-            : "none";
-      });
-    }
+    evento.style.display =
+      coincideTipo && coincideImpacto && coincideTexto
+        ? "block"
+        : "none";
+  });
+}
  
-    filterTipo.addEventListener("change", aplicarFiltros);
-    filterImpacto.addEventListener("change", aplicarFiltros);
-    filterSearch.addEventListener("input", aplicarFiltros);
+filterTipo.addEventListener("change", aplicarFiltros);
+filterImpacto.addEventListener("change", aplicarFiltros);
+filterSearch.addEventListener("input", aplicarFiltros);
  
  
     /* ===========================================================
