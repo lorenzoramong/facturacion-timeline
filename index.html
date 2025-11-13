@@ -85,7 +85,7 @@
   .main-timeline::before {
     content: "";
     position: absolute;
-    top: 58%; /* CORREGIDO PARA QUE LA LÍNEA BAJE */
+    top: 58%; 
     left: 5%;
     right: 5%;
     height: 4px;
@@ -105,7 +105,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: .25s;
-    z-index: 2; /* ENCIMA DE LA LÍNEA */
+    z-index: 2;
   }
  
   .year-node.active {
@@ -193,6 +193,30 @@
     box-shadow: 0 6px 14px rgba(0,0,0,0.25);
   }
  
+  /* Botón Logout */
+  .logout-btn {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #0072bb, #7cc242);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    transition: all 0.2s ease;
+    z-index: 1200;
+    backdrop-filter: blur(4px);
+  }
+ 
+  .logout-btn:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+  }
+ 
   /* Panel lateral */
   #sidePanel {
     position: fixed;
@@ -217,6 +241,16 @@
     margin-bottom: 10px;
   }
  
+  #closePanel {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #0072bb;
+    font-weight: 600;
+  }
+ 
   #sidePanel input,
   #sidePanel textarea,
   #sidePanel select {
@@ -235,17 +269,6 @@
     border: none;
     cursor: pointer;
     border-radius: 8px;
-  }
- 
-  /* X para cerrar panel */
-  #closePanel {
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    font-size: 22px;
-    cursor: pointer;
-    color: #0072bb;
-    font-weight: 600;
   }
  
   /* Modal */
@@ -270,6 +293,8 @@
 </head>
  
 <body>
+ 
+<button id="logoutBtn" class="logout-btn">← Salir</button>
  
 <!-- Encabezado -->
 <header class="hero">
@@ -316,12 +341,9 @@
   <div id="closePanel">✖</div>
  
   <input id="dateInput" type="date" />
- 
-  <input id="titleInput" placeholder="Título" />
- 
-  <input id="detailInput" placeholder="Detalle breve (8 palabras)" />
- 
-  <textarea id="descriptionInput" placeholder="Descripción"></textarea>
+<input id="titleInput" placeholder="Título" />
+<input id="detailInput" placeholder="Detalle breve (8 palabras)" />
+<textarea id="descriptionInput" placeholder="Descripción"></textarea>
  
   <select id="typeInput">
 <option value="">Tipo</option>
@@ -357,7 +379,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
  
 <script>
-  /* 🔥 CONFIG DE FIREBASE */
   const firebaseConfig = {
     apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
     authDomain: "camino-gdc.firebaseapp.com",
@@ -375,17 +396,11 @@
   });
 </script>
  
-<!-- LÓGICA PRINCIPAL -->
 <script>
-  /* CONFIG GOOGLE SHEETS / APPS SCRIPT */
   const SHEET_ID   = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
   const API_KEY    = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
   const SHEET_NAME = "Hitos";
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec";
- 
-  /* REFERENCIAS DOM */
-  const timeline            = document.getElementById("timeline");
-  const yearDetailContainer = document.getElementById("yearDetailContainer");
  
   const filterType    = document.getElementById("filterType");
   const filterImpact  = document.getElementById("filterImpact");
@@ -395,50 +410,45 @@
   const sidePanel    = document.getElementById("sidePanel");
   const closePanel   = document.getElementById("closePanel");
   const submitHito   = document.getElementById("submitHito");
+  const timeline     = document.getElementById("timeline");
  
-  /* MODAL */
   const modal      = document.getElementById("modal");
   const modalTitle = document.getElementById("modalTitle");
   const modalDate  = document.getElementById("modalDate");
   const modalDesc  = document.getElementById("modalDesc");
   const modalExtra = document.getElementById("modalExtra");
  
-  /* ============================
-     1. Construir años dinámicos
-  ============================ */
+  /* Logout */
+  document.getElementById("logoutBtn").onclick = () => {
+    auth.signOut().then(() => {
+      window.location.href = "login.html";
+    });
+  };
+ 
   async function construirAnios() {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
     const res = await fetch(url);
     const data = await res.json();
     if (!data.values) return;
  
-    const rows = data.values.slice(1); // quitar encabezados
-    const yearsSet = new Set();
- 
-    rows.forEach(r => {
-      const fecha = r[0];
-      if (!fecha) return;
-      const year = new Date(fecha).getFullYear();
-      if (!isNaN(year)) yearsSet.add(year);
-    });
- 
-    const years = Array.from(yearsSet).sort((a, b) => a - b);
+    const rows = data.values.slice(1);
+    const years = [...new Set(rows.map(r => new Date(r[0]).getFullYear()))]
+      .filter(y => !isNaN(y))
+      .sort();
  
     timeline.innerHTML = "";
-    yearDetailContainer.innerHTML = "";
+    document.getElementById("yearDetailContainer").innerHTML = "";
  
-    years.forEach(year => {
-      // Nodo de año
+    years.forEach(y => {
       const node = document.createElement("div");
       node.className = "year-node";
-      node.dataset.year = year;
-      node.textContent = year;
+      node.dataset.year = y;
+      node.textContent = y;
       timeline.appendChild(node);
  
-      // Contenedor de eventos del año
       const section = document.createElement("section");
       section.className = "year-details";
-      section.id = `details-${year}`;
+      section.id = `details-${y}`;
       section.innerHTML = `<div class="events-line"></div>`;
       yearDetailContainer.appendChild(section);
     });
@@ -447,28 +457,21 @@
     cargarHitos();
   }
  
-  /* ============================
-     2. Activar click en años
-  ============================ */
   function activarClicksAnios() {
     const nodes   = document.querySelectorAll(".year-node");
     const details = document.querySelectorAll(".year-details");
  
-    nodes.forEach(node => {
-      node.onclick = () => {
-        nodes.forEach(n => n.classList.remove("active"));
-        details.forEach(d => d.classList.remove("active"));
+    nodes.forEach(n => {
+      n.onclick = () => {
+        nodes.forEach(a => a.classList.remove("active"));
+        details.forEach(b => b.classList.remove("active"));
  
-        node.classList.add("active");
-        const target = document.getElementById(`details-${node.dataset.year}`);
-        if (target) target.classList.add("active");
+        n.classList.add("active");
+        document.getElementById(`details-${n.dataset.year}`).classList.add("active");
       };
     });
   }
  
-  /* ============================
-     3. Cargar hitos desde Sheets
-  ============================ */
   async function cargarHitos() {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
     const res = await fetch(url);
@@ -477,27 +480,19 @@
  
     const rows = data.values.slice(1);
  
-    rows.forEach(r => {
-      const [fecha, titulo, detalle, descripcion, tipo, impacto, autor] = r;
- 
+    rows.forEach(([fecha, titulo, detalle, descripcion, tipo, impacto, autor]) => {
       if (!fecha || !titulo) return;
  
-      const year = new Date(fecha).getFullYear();
-      const cont = document.getElementById(`details-${year}`);
+      const y = new Date(fecha).getFullYear();
+      const cont = document.getElementById(`details-${y}`);
       if (!cont) return;
- 
-      const tipoLower    = (tipo || "").toLowerCase();
-      const impactoLower = (impacto || "").toLowerCase();
-      const searchText   = `
-        ${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}
-      `.toLowerCase();
  
       const el = document.createElement("div");
       el.className = "event";
  
-      el.dataset.type   = tipoLower;
-      el.dataset.impact = impactoLower;
-      el.dataset.key    = searchText;
+      el.dataset.type   = (tipo || "").toLowerCase();
+      el.dataset.impact = (impacto || "").toLowerCase();
+      el.dataset.key    = `${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}`.toLowerCase();
  
       el.innerHTML = `
 <div class="date">${fecha}</div>
@@ -505,128 +500,71 @@
 <p>${detalle || ""}</p>
       `;
  
-      el.onclick = () =>
-        abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
+      el.onclick = () => abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
  
       cont.appendChild(el);
     });
  
-    aplicarFiltros(); // aplicar filtros iniciales (por si hay algo)
+    aplicarFiltros();
   }
  
-  /* ============================
-     4. Modal de detalle
-  ============================ */
   function abrirModal(t, f, d, tipo, impacto, autor) {
+    modal.style.display = "flex";
     modalTitle.textContent = t;
     modalDate.textContent  = f;
     modalDesc.textContent  = d || "";
     modalExtra.innerHTML   = `
-<b>Tipo:</b> ${tipo || ""}<br>
-<b>Impacto:</b> ${impacto || ""}<br>
-<b>Autor:</b> ${autor || ""}<br>
+<b>Tipo:</b> ${tipo}<br>
+<b>Impacto:</b> ${impacto}<br>
+<b>Autor:</b> ${autor}
     `;
- 
-    modal.style.display = "flex";
   }
  
   modal.onclick = e => {
     if (e.target === modal) modal.style.display = "none";
   };
  
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
-      modal.style.display = "none";
-      sidePanel.classList.remove("open");
-    }
-  });
- 
-  /* ============================
-     5. Filtros (tipo + impacto + texto)
-  ============================ */
   function aplicarFiltros() {
-    const typeFilter   = (filterType.value   || "").toLowerCase();
-    const impactFilter = (filterImpact.value || "").toLowerCase();
-    const textFilter   = (filterKeyword.value || "").toLowerCase();
+    const t = filterType.value.toLowerCase();
+    const i = filterImpact.value.toLowerCase();
+    const k = filterKeyword.value.toLowerCase();
  
-    const eventos = document.querySelectorAll(".event");
+    document.querySelectorAll(".event").forEach(ev => {
+      const matchT = !t || ev.dataset.type === t;
+      const matchI = !i || ev.dataset.impact === i;
+      const matchK = !k || ev.dataset.key.includes(k);
  
-    eventos.forEach(ev => {
-      const tipoEv    = ev.dataset.type   || "";
-      const impactEv  = ev.dataset.impact || "";
-      const searchEv  = ev.dataset.key    || "";
- 
-      const coincideTipo   = !typeFilter   || tipoEv === typeFilter;
-      const coincideImpact = !impactFilter || impactEv === impactFilter;
-      const coincideTexto  = !textFilter   || searchEv.includes(textFilter);
- 
-      ev.style.display = (coincideTipo && coincideImpact && coincideTexto)
-        ? "block"
-        : "none";
+      ev.style.display = (matchT && matchI && matchK) ? "" : "none";
     });
   }
  
-  filterType.onchange    = aplicarFiltros;
-  filterImpact.onchange  = aplicarFiltros;
-  filterKeyword.oninput  = aplicarFiltros;
+  filterType.onchange   =
+  filterImpact.onchange =
+  filterKeyword.oninput = aplicarFiltros;
  
-  /* ============================
-     6. Panel lateral (+ y ✖)
-  ============================ */
-  openPanelBtn.onclick = () => {
-    sidePanel.classList.add("open");
-  };
+  openPanelBtn.onclick = () => sidePanel.classList.add("open");
+  closePanel.onclick    = () => sidePanel.classList.remove("open");
  
-  closePanel.onclick = () => {
-    sidePanel.classList.remove("open");
-  };
- 
-  /* ============================
-     7. Guardar hito en Apps Script
-  ============================ */
   submitHito.onclick = async () => {
-    const fecha       = document.getElementById("dateInput").value;
-    const titulo      = document.getElementById("titleInput").value;
-    const detalle     = document.getElementById("detailInput").value;
-    const descripcion = document.getElementById("descriptionInput").value;
-    const tipo        = document.getElementById("typeInput").value;
-    const impacto     = document.getElementById("impactInput").value;
-    const autor       = document.getElementById("authorInput").value;
- 
-    if (!fecha || !titulo) {
-      alert("La fecha y el título son obligatorios.");
-      return;
-    }
- 
     const payload = {
-      fecha,
-      titulo,
-      detalle,
-      descripcion,
-      tipo,
-      impacto,
-      autor
+      fecha: dateInput.value,
+      titulo: titleInput.value,
+      detalle: detailInput.value,
+      descripcion: descriptionInput.value,
+      tipo: typeInput.value,
+      impacto: impactInput.value,
+      autor: authorInput.value
     };
  
-    try {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
  
-      if (!res.ok) throw new Error("No se pudo guardar el hito");
- 
-      alert("Hito guardado ✔");
-      location.reload();
-    } catch (err) {
-      console.error(err);
-      alert("Error al guardar el hito.");
-    }
+    alert("Hito guardado ✔");
+    location.reload();
   };
  
-  /* ============================
-     8. Inicialización
-  ============================ */
   window.onload = construirAnios;
 </script>
  
