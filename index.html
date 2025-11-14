@@ -85,6 +85,7 @@
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    z-index: 5;
   }
  
   select, input {
@@ -178,6 +179,7 @@
     cursor: pointer;
     box-shadow: 0 5px 12px rgba(0,0,0,.06);
     transition: .25s;
+    position: relative;
   }
  
   .event:hover {
@@ -189,7 +191,46 @@
     font-weight: 600;
   }
  
-  /* Botón abrir panel lateral */
+  /* Controles admin dentro del hito */
+  .admin-tools {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    justify-content: flex-end;
+  }
+ 
+  .icon-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    opacity: 0.9;
+  }
+ 
+  .icon-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    opacity: 1;
+  }
+ 
+  .icon-edit {
+    background: #0072bb;
+    color: white;
+  }
+ 
+  .icon-delete {
+    background: #e84545;
+    color: white;
+  }
+ 
+  /* Botón abrir panel lateral (+) */
   #openPanelBtn {
     position: fixed;
     top: 25px;
@@ -216,7 +257,7 @@
     box-shadow: 0 6px 14px rgba(0,0,0,0.25);
   }
  
-  /* Panel lateral */
+  /* Panel lateral (formulario Crear / Editar hito) */
   #sidePanel {
     position: fixed;
     right: -400px;
@@ -245,7 +286,14 @@
     font-weight:600;
   }
  
-  #sidePanel input, #sidePanel textarea {
+  #sidePanel h2 {
+    color: #0072bb;
+    margin-bottom: 10px;
+  }
+ 
+  #sidePanel input,
+  #sidePanel textarea,
+  #sidePanel select {
     width: 100%;
     margin-bottom: 12px;
     padding: 10px;
@@ -272,6 +320,7 @@
     background: rgba(0,0,0,.5);
     justify-content: center;
     align-items: center;
+    z-index: 2000;
   }
  
   #modalContent {
@@ -303,14 +352,14 @@
 <option value="mejora">Mejora</option>
 </select>
  
-<select id="filterImpact">
+  <select id="filterImpact">
 <option value="">Impacto</option>
 <option value="alto">Alto</option>
 <option value="medio">Medio</option>
 <option value="bajo">Bajo</option>
 </select>
  
-<input id="filterKeyword" placeholder="Buscar..." />
+  <input id="filterKeyword" placeholder="Buscar..." />
 </div>
  
 <section class="main-timeline" id="timeline"></section>
@@ -320,16 +369,29 @@
 <button id="openPanelBtn">+</button>
  
 <div id="sidePanel">
-<h2>Crear Hito</h2>
+<h2>Crear / Editar Hito</h2>
 <div id="closePanel">✖</div>
  
-  <input id="dateInput" type="date">
-<input id="titleInput" placeholder="Título">
-<input id="detailInput" placeholder="Detalle breve (8 palabras)">
+  <input id="dateInput" type="date" />
+<input id="titleInput" placeholder="Título" />
+<input id="detailInput" placeholder="Detalle breve (8 palabras)" />
 <textarea id="descriptionInput" placeholder="Descripción"></textarea>
-<input id="typeInput" placeholder="Tipo">
-<input id="impactInput" placeholder="Impacto">
-<input id="authorInput" placeholder="Autor">
+ 
+  <select id="typeInput">
+<option value="">Tipo</option>
+<option value="Implementación">Implementación</option>
+<option value="Incidente">Incidente</option>
+<option value="Mejora">Mejora</option>
+</select>
+ 
+  <select id="impactInput">
+<option value="">Impacto</option>
+<option value="Alto">Alto</option>
+<option value="Medio">Medio</option>
+<option value="Bajo">Bajo</option>
+</select>
+ 
+  <input id="authorInput" placeholder="Autor" />
  
   <button id="submitHito">Guardar Hito</button>
 </div>
@@ -343,12 +405,11 @@
 </div>
 </div>
 
-<!-- Firebase -->
+ <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
  
 <script>
-/* CONFIG FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
   authDomain: "camino-gdc.firebaseapp.com",
@@ -361,12 +422,39 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
  
-const SHEET_ID = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
-const API_KEY = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
-const SHEET_NAME = "Hitos";
+/* Google Sheets / Apps Script config */
+const SHEET_ID        = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+const API_KEY         = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+const SHEET_NAME      = "Hitos";
 const ROLE_SHEET_NAME = "Usuarios";
+const SCRIPT_URL      = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec";
  
-/* ROLES DESDE GOOGLE SHEETS */
+/* DOM refs */
+const filterType    = document.getElementById("filterType");
+const filterImpact  = document.getElementById("filterImpact");
+const filterKeyword = document.getElementById("filterKeyword");
+ 
+const openPanelBtn  = document.getElementById("openPanelBtn");
+const sidePanel     = document.getElementById("sidePanel");
+const closePanel    = document.getElementById("closePanel");
+const submitHito    = document.getElementById("submitHito");
+const timeline      = document.getElementById("timeline");
+const yearDetailContainer = document.getElementById("yearDetailContainer");
+ 
+const modal      = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const modalDate  = document.getElementById("modalDate");
+const modalDesc  = document.getElementById("modalDesc");
+const modalExtra = document.getElementById("modalExtra");
+ 
+/* Logout */
+document.getElementById("logoutBtn").onclick = () => {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+};
+ 
+/* Obtener rol desde hoja Usuarios */
 async function obtenerRolUsuario(email) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${ROLE_SHEET_NAME}?key=${API_KEY}`;
   const res = await fetch(url);
@@ -374,17 +462,16 @@ async function obtenerRolUsuario(email) {
   if (!data.values) return null;
  
   const rows = data.values.slice(1);
- 
-  for (let row of rows) {
+  for (const row of rows) {
     const [correo, rol] = row;
-    if (correo.trim().toLowerCase() === email.toLowerCase()) {
-      return rol.trim().toLowerCase();
+    if (correo && correo.trim().toLowerCase() === email.toLowerCase()) {
+      return (rol || "").trim().toLowerCase();
     }
   }
   return null;
 }
  
-/* VERIFICAR LOGIN */
+/* Estado de auth + rol */
 auth.onAuthStateChanged(async user => {
   if (!user) {
     window.location.href = "login.html";
@@ -395,54 +482,54 @@ auth.onAuthStateChanged(async user => {
   window.USER_ROLE = rol;
  
   if (rol !== "admin") {
-    document.getElementById("openPanelBtn").style.display = "none";
-    document.getElementById("sidePanel").style.display = "none";
+    if (openPanelBtn) openPanelBtn.style.display = "none";
+    if (sidePanel) sidePanel.style.display = "none";
   }
 });
  
-/* LOGOUT */
-document.getElementById("logoutBtn").onclick = () => {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
-  });
-};
- 
-/* AÑOS DINÁMICOS */
+/* Construir años dinámicos desde Hitos */
 async function construirAnios() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!data.values) return;
  
-  const rows = data.values.slice(1);
-  const years = [...new Set(rows.map(r => new Date(r[0]).getFullYear()))];
+  const rows = data.values.slice(1); // saltar encabezados
+  const yearsSet = new Set();
  
-  const timeline = document.getElementById("timeline");
-  timeline.innerHTML = "";
- 
-  years.forEach(y => {
-    const el = document.createElement("div");
-    el.className = "year-node";
-    el.dataset.year = y;
-    el.textContent = y;
-    timeline.appendChild(el);
+  rows.forEach(r => {
+    const fecha = r[1]; // col B (fecha)
+    if (!fecha) return;
+    const y = new Date(fecha).getFullYear();
+    if (!isNaN(y)) yearsSet.add(y);
   });
  
-  const container = document.getElementById("yearDetailContainer");
-  container.innerHTML = "";
+  const years = Array.from(yearsSet).sort((a,b) => a - b);
+ 
+  timeline.innerHTML = "";
+  yearDetailContainer.innerHTML = "";
+ 
   years.forEach(y => {
-    container.innerHTML += `<section class="year-details" id="details-${y}">
-<div class="events-line"></div>
-</section>`;
+    const node = document.createElement("div");
+    node.className = "year-node";
+    node.dataset.year = y;
+    node.textContent = y;
+    timeline.appendChild(node);
+ 
+    const section = document.createElement("section");
+    section.className = "year-details";
+    section.id = `details-${y}`;
+    section.innerHTML = `<div class="events-line"></div>`;
+    yearDetailContainer.appendChild(section);
   });
  
   activarClicksAnios();
   cargarHitos();
 }
  
-/* CLICK A AÑOS */
+/* Click en años */
 function activarClicksAnios() {
-  const nodes = document.querySelectorAll(".year-node");
+  const nodes   = document.querySelectorAll(".year-node");
   const details = document.querySelectorAll(".year-details");
  
   nodes.forEach(n => {
@@ -450,111 +537,221 @@ function activarClicksAnios() {
       nodes.forEach(x => x.classList.remove("active"));
       details.forEach(d => d.classList.remove("active"));
       n.classList.add("active");
-      document.getElementById("details-"+n.dataset.year).classList.add("active");
+      const target = document.getElementById("details-" + n.dataset.year);
+      if (target) target.classList.add("active");
     };
   });
 }
  
-/* CARGAR HITOS */
+/* Crear tarjeta de evento (con iconos admin si aplica) */
+function crearEvento(row) {
+  const [id, fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
+  if (!fecha || !titulo) return;
+ 
+  const y = new Date(fecha).getFullYear();
+  const cont = document.getElementById("details-" + y);
+  if (!cont) return;
+ 
+  const el = document.createElement("div");
+  el.className = "event";
+ 
+  el.dataset.id      = id;
+  el.dataset.type    = (tipo || "").toLowerCase();
+  el.dataset.impact  = (impacto || "").toLowerCase();
+  el.dataset.key     = `
+    ${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}
+  `.toLowerCase();
+ 
+  el.innerHTML = `
+<div class="date">${fecha}</div>
+<h3>${titulo}</h3>
+<p>${detalle || ""}</p>
+    ${window.USER_ROLE === "admin" ? `
+<div class="admin-tools">
+<button class="icon-btn icon-edit" data-id="${id}" title="Editar">✎</button>
+<button class="icon-btn icon-delete" data-id="${id}" title="Eliminar">🗑</button>
+</div>
+    ` : ""}
+  `;
+ 
+  // Click en la tarjeta → modal (salvo que se haga click en botones admin)
+  el.addEventListener("click", (e) => {
+    if (e.target.classList.contains("icon-edit") ||
+        e.target.classList.contains("icon-delete")) {
+      return;
+    }
+    abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
+  });
+ 
+  if (window.USER_ROLE === "admin") {
+    const editBtn   = el.querySelector(".icon-edit");
+    const deleteBtn = el.querySelector(".icon-delete");
+ 
+    if (editBtn) {
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        cargarHitoEnFormulario(row);
+      };
+    }
+ 
+    if (deleteBtn) {
+      deleteBtn.onclick = async (e) => {
+        e.stopPropagation();
+        if (!confirm("¿Seguro que deseas eliminar este hito?")) return;
+        await eliminarHito(id);
+        location.reload();
+      };
+    }
+  }
+ 
+  cont.appendChild(el);
+}
+ 
+/* Cargar todos los hitos */
 async function cargarHitos() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!data.values) return;
  
-  const rows = data.values.slice(1);
+  const rows = data.values.slice(1); // sin encabezados
  
-  rows.forEach(r => {
-    const [fecha,titulo,detalle,descripcion,tipo,impacto,autor] = r;
-    const y = new Date(fecha).getFullYear();
-    const cont = document.getElementById("details-"+y);
-    if (!cont) return;
+  rows.forEach(row => crearEvento(row));
  
-    const el = document.createElement("div");
-    el.className = "event";
+  aplicarFiltros();
+}
  
-    el.dataset.type = tipo.toLowerCase();
-    el.dataset.impact = impacto.toLowerCase();
-    el.dataset.key = `${titulo} ${detalle} ${descripcion}`.toLowerCase();
+/* Modal de detalle */
+function abrirModal(t, f, d, tipo, impacto, autor) {
+  modal.style.display = "flex";
+  modalTitle.textContent = t;
+  modalDate.textContent  = f;
+  modalDesc.textContent  = d || "";
+  modalExtra.innerHTML   = `
+<b>Tipo:</b> ${tipo || ""}<br>
+<b>Impacto:</b> ${impacto || ""}<br>
+<b>Autor:</b> ${autor || ""}<br>
+  `;
+}
  
-    el.innerHTML = `
-<div class="date">${fecha}</div>
-<h3>${titulo}</h3>
-<p>${detalle}</p>
-    `;
+modal.onclick = (e) => {
+  if (e.target === modal) modal.style.display = "none";
+};
  
-    el.onclick = () => abrirModal(titulo,fecha,descripcion,tipo,impacto,autor);
+/* Filtros */
+function aplicarFiltros() {
+  const t = (filterType.value || "").toLowerCase();
+  const i = (filterImpact.value || "").toLowerCase();
+  const k = (filterKeyword.value || "").toLowerCase();
  
-    cont.appendChild(el);
+  document.querySelectorAll(".event").forEach(ev => {
+    const type   = ev.dataset.type   || "";
+    const impact = ev.dataset.impact || "";
+    const key    = ev.dataset.key    || "";
+ 
+    const matchT = !t || type === t;
+    const matchI = !i || impact === i;
+    const matchK = !k || key.includes(k);
+ 
+    ev.style.display = (matchT && matchI && matchK) ? "" : "none";
   });
 }
  
-/* MODAL */
-function abrirModal(t,f,d,tipo,i,a) {
-  modal.style.display = "flex";
-  modalTitle.textContent = t;
-  modalDate.textContent = f;
-  modalDesc.textContent = d;
-  modalExtra.innerHTML = `
-<b>Tipo:</b> ${tipo}<br>
-<b>Impacto:</b> ${i}<br>
-<b>Autor:</b> ${a}<br>
-  `;
+filterType.onchange   =
+filterImpact.onchange =
+filterKeyword.oninput = aplicarFiltros;
+
+/* Abrir / cerrar panel lateral */
+openPanelBtn.onclick = () => {
+  if (window.USER_ROLE !== "admin") return;
+  window.EDITING_ID = null;
+  limpiarFormulario();
+  sidePanel.classList.add("open");
+};
  
-  modal.onclick = e => { if(e.target.id==="modal") modal.style.display="none"; };
-}
- 
-/* ABRIR PANEL LATERAL */
-openPanelBtn.onclick = () => sidePanel.classList.add("open");
 closePanel.onclick = () => sidePanel.classList.remove("open");
  
-/* GUARDAR HITO (solo ADMIN) */
-submitHito.onclick = async () => {
+/* Llenar formulario para editar */
+function cargarHitoEnFormulario(row) {
+  const [id, fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
  
+  window.EDITING_ID = id;
+ 
+  document.getElementById("dateInput").value        = fecha;
+  document.getElementById("titleInput").value       = titulo;
+  document.getElementById("detailInput").value      = detalle;
+  document.getElementById("descriptionInput").value = descripcion;
+  document.getElementById("typeInput").value        = tipo;
+  document.getElementById("impactInput").value      = impacto;
+  document.getElementById("authorInput").value      = autor;
+ 
+  sidePanel.classList.add("open");
+}
+ 
+/* Limpiar formulario */
+function limpiarFormulario() {
+  document.getElementById("dateInput").value        = "";
+  document.getElementById("titleInput").value       = "";
+  document.getElementById("detailInput").value      = "";
+  document.getElementById("descriptionInput").value = "";
+  document.getElementById("typeInput").value        = "";
+  document.getElementById("impactInput").value      = "";
+  document.getElementById("authorInput").value      = "";
+}
+ 
+/* Guardar hito (add o update) */
+submitHito.onclick = async () => {
   if (window.USER_ROLE !== "admin") {
-    alert("❌ No tenés permisos para crear hitos.");
+    alert("❌ No tenés permisos para crear/editar hitos.");
     return;
   }
  
-  const obj = {
-    fecha: dateInput.value,
-    titulo: titleInput.value,
-    detalle: detailInput.value,
-    descripcion: descriptionInput.value,
-    tipo: typeInput.value,
-    impacto: impactInput.value,
-    autor: authorInput.value
+  const payload = {
+    id: window.EDITING_ID || "",
+    fecha: document.getElementById("dateInput").value,
+    titulo: document.getElementById("titleInput").value,
+    detalle: document.getElementById("detailInput").value,
+    descripcion: document.getElementById("descriptionInput").value,
+    tipo: document.getElementById("typeInput").value,
+    impacto: document.getElementById("impactInput").value,
+    autor: document.getElementById("authorInput").value,
+    action: window.EDITING_ID ? "update" : "add"
   };
  
-  await fetch("https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec", {
-    method:"POST",
-    body: JSON.stringify(obj)
-  });
+  if (!payload.fecha || !payload.titulo) {
+    alert("La fecha y el título son obligatorios.");
+    return;
+  }
  
-  alert("Hito guardado");
-  location.reload();
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Error en Apps Script");
+    alert("Hito guardado ✔");
+    window.EDITING_ID = null;
+    location.reload();
+  } catch (err) {
+    console.error(err);
+    alert("Ocurrió un error guardando el hito.");
+  }
 };
  
-/* FILTROS */
-function filtrar() {
-  const type = (filterType.value || "").toLowerCase();
-  const impact = (filterImpact.value || "").toLowerCase();
-  const key = (filterKeyword.value || "").toLowerCase();
- 
-  document.querySelectorAll(".event").forEach(e => {
-    const matchType = !type || e.dataset.type.includes(type);
-    const matchImpact = !impact || e.dataset.impact.includes(impact);
-    const matchKey = !key || e.dataset.key.includes(key);
- 
-    e.style.display = (matchType && matchImpact && matchKey) ? "" : "none";
-  });
+/* Eliminar hito */
+async function eliminarHito(id) {
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "delete", id })
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Error eliminando el hito.");
+  }
 }
  
-filterType.onchange =
-filterImpact.onchange =
-filterKeyword.oninput = filtrar;
- 
-/* START */
+/* Inicializar */
 window.onload = construirAnios;
 </script>
  
