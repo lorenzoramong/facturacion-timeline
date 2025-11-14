@@ -1,77 +1,113 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAMINO GDC – Iniciar Sesión</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iniciar Sesión - CAMINO GDC</title>
  
 <style>
+ 
   body {
     margin: 0;
     font-family: "Inter", sans-serif;
-    background: linear-gradient(135deg, #eaf6ff, #d3f7e4);
-    height: 100vh;
+    background: linear-gradient(135deg, #eaf6ff 0%, #d3f7e4 100%);
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
   }
  
-  .login-box {
-    width: 330px;
+  /* Contenedor del login */
+  .login-card {
     background: #ffffffee;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
+    padding: 40px 50px;
+    border-radius: 18px;
+    width: 380px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     text-align: center;
+    animation: fadeIn 0.6s ease;
   }
  
-  .login-box h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(25px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+ 
+  /* Logo */
+  .logo {
+    width: 95px;
+    height: 95px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+  }
+ 
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-6px); }
+  }
+ 
+  h2 {
+    margin: 10px 0 25px;
     color: #0072bb;
-    margin-bottom: 15px;
+    font-size: 1.7rem;
   }
  
+  /* Inputs */
   input {
     width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    padding: 13px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    border: 1px solid #c7c7c7;
+    font-size: 0.95rem;
+    transition: all 0.2s;
   }
  
+  input:focus {
+    outline: none;
+    border-color: #0072bb;
+    box-shadow: 0 0 6px #0072bb50;
+  }
+ 
+  /* Botón */
   button {
     width: 100%;
-    padding: 12px;
-    margin-top: 18px;
-    background: linear-gradient(90deg,#0072bb,#7cc242);
-    color: white;
+    padding: 14px;
+    background: linear-gradient(90deg, #0072bb, #7cc242);
     border: none;
-    border-radius: 8px;
-    cursor: pointer;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
     font-weight: 600;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
  
-  .error {
-    margin-top: 12px;
-    color: red;
-    font-size: 0.9rem;
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.20);
   }
+ 
 </style>
 </head>
  
 <body>
  
-<div class="login-box">
-<h2>Iniciar Sesión</h2>
+<div class="login-card">
  
-  <input type="email" id="correo" placeholder="Correo electrónico" required>
-<input type="password" id="clave" placeholder="Contraseña" required>
+  <img src="logo-gases.png" class="logo" alt="Gases del Caribe">
+ 
+  <h2>Iniciar Sesión</h2>
+ 
+  <input id="email" type="email" placeholder="Correo electrónico" />
+<input id="password" type="password" placeholder="Contraseña" />
  
   <button id="loginBtn">Ingresar</button>
  
-  <div id="errorMsg" class="error"></div>
 </div>
  
 <!-- Firebase -->
@@ -79,43 +115,37 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
  
 <script>
-/* 🔥 TU CONFIG REAL DE FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
-  authDomain: "camino-gdc.firebaseapp.com",
-  projectId: "camino-gdc",
-  storageBucket: "camino-gdc.firebasestorage.app",
-  messagingSenderId: "1053392006260",
-  appId: "1:1053392006260:web:8c39450408566f14987521"
-};
  
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+  const firebaseConfig = {
+    apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
+    authDomain: "camino-gdc.firebaseapp.com",
+    projectId: "camino-gdc",
+    storageBucket: "camino-gdc.firebasestorage.app",
+    messagingSenderId: "1053392006260",
+    appId: "1:1053392006260:web:8c39450408566f14987521"
+  };
  
-/* INICIO DE SESIÓN */
-document.getElementById("loginBtn").onclick = async () => {
-  const correo = document.getElementById("correo").value.trim();
-  const clave  = document.getElementById("clave").value.trim();
-  const errorBox = document.getElementById("errorMsg");
-  errorBox.textContent = "";
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
  
-  if (!correo || !clave) {
-    errorBox.textContent = "Por favor completa todos los campos.";
-    return;
-  }
+  document.getElementById("loginBtn").onclick = async () => {
+    const email = document.getElementById("email").value.trim();
+    const pass  = document.getElementById("password").value.trim();
  
-  try {
-    await auth.signInWithEmailAndPassword(correo, clave);
-    window.location.href = "index.html";
-  } 
-  catch (err) {
-    console.error(err);
-    if (err.code === "auth/invalid-email") errorBox.textContent = "Correo inválido.";
-    else if (err.code === "auth/user-not-found") errorBox.textContent = "Usuario no registrado.";
-    else if (err.code === "auth/wrong-password") errorBox.textContent = "Contraseña incorrecta.";
-    else errorBox.textContent = "Error al iniciar sesión.";
-  }
-};
+    if (!email || !pass) {
+      alert("Completa todos los campos");
+      return;
+    }
+ 
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+      window.location.href = "index.html";
+    } catch (err) {
+      alert("❌ Credenciales incorrectas");
+      console.log(err);
+    }
+  };
+ 
 </script>
  
 </body>
