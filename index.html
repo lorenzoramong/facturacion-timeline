@@ -546,14 +546,14 @@ function activarClicksAnios() {
 /* Crear tarjeta de evento (con iconos admin si aplica) */
 function crearEvento(row) {
   const [
-    id = "",
     fecha = "",
     titulo = "",
     detalle = "",
     descripcion = "",
     tipo = "",
     impacto = "",
-    autor = ""
+    autor = "",
+    id = "",
   ] = row.concat(Array(8 - row.length).fill(""));
   if (!fecha || !titulo) return;
  
@@ -682,7 +682,16 @@ closePanel.onclick = () => sidePanel.classList.remove("open");
  
 /* Llenar formulario para editar */
 function cargarHitoEnFormulario(row) {
-  const [id, fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
+  const [
+  fecha = "",
+  titulo = "",
+  detalle = "",
+  descripcion = "",
+  tipo = "",
+  impacto = "",
+  autor = "",
+  id = ""
+] = row;
  
   window.EDITING_ID = id;
  
