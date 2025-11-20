@@ -498,7 +498,7 @@ async function construirAnios() {
   const yearsSet = new Set();
  
   rows.forEach(r => {
-    const fecha = r[1]; // col B (fecha)
+    const fecha = r[1]; // col A (fecha)
     if (!fecha) return;
     const y = new Date(fecha).getFullYear();
     if (!isNaN(y)) yearsSet.add(y);
@@ -553,7 +553,7 @@ function crearEvento(row) {
     tipo = "",
     impacto = "",
     autor = "",
-    id = "",
+    id = ""
   ] = row.concat(Array(8 - row.length).fill(""));
   if (!fecha || !titulo) return;
  
