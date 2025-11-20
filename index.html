@@ -295,6 +295,18 @@ select, input {
  
 <body>
 <button id="logoutBtn" class="logout-btn">← Salir</button>
+ <!-- Botón de descarga de reporte -->
+<button id="downloadReportBtn" class="logout-btn" style="left:auto; right:22px; top:90px; background:#0072bb;">
+  Descargar reporte
+</button>
+ 
+<!-- Menú de opciones de descarga -->
+<div id="downloadMenu" 
+     style="display:none; position:fixed; top:150px; right:22px; background:white;
+            padding:10px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,.15); z-index:2000;">
+<button id="downloadExcel" style="margin-bottom:8px; width:100%;">📊 Excel</button>
+<button id="downloadPDF" style="width:100%;">📄 PDF</button>
+</div>
  
 <header class="hero">
 <img src="logo-gases.png" class="hero-logo">
@@ -404,11 +416,36 @@ const modalDate           = document.getElementById("modalDate");
 const modalDesc           = document.getElementById("modalDesc");
 const modalExtra          = document.getElementById("modalExtra");
  
+ /* Botón descarga reporte */
+const downloadBtn        = document.getElementById("downloadReportBtn");
+const downloadMenu       = document.getElementById("downloadMenu");
+const downloadExcelBtn   = document.getElementById("downloadExcel");
+const downloadPDFBtn     = document.getElementById("downloadPDF");
+ 
 document.getElementById("logoutBtn").onclick = () => {
   auth.signOut().then(() => {
     window.location.href = "login.html";
   });
 };
+
+ /* Menú descarga reporte */
+if (downloadBtn && downloadMenu && downloadExcelBtn && downloadPDFBtn) {
+  downloadBtn.onclick = () => {
+    downloadMenu.style.display = (downloadMenu.style.display === "none" || !downloadMenu.style.display)
+      ? "block"
+      : "none";
+  };
+ 
+  downloadExcelBtn.onclick = () => {
+    window.location.href = SCRIPT_URL + "?action=excel";
+    downloadMenu.style.display = "none";
+  };
+ 
+  downloadPDFBtn.onclick = () => {
+    window.location.href = SCRIPT_URL + "?action=pdf";
+    downloadMenu.style.display = "none";
+  };
+}
  
 /* —————————— ROL DESDE GOOGLE SHEETS —————————— */
 async function obtenerRolUsuario(email) {
