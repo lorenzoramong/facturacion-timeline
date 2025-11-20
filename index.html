@@ -545,7 +545,16 @@ function activarClicksAnios() {
  
 /* Crear tarjeta de evento (con iconos admin si aplica) */
 function crearEvento(row) {
-  const [id, fecha, titulo, detalle, descripcion, tipo, impacto, autor] = row;
+  const [
+    id = "",
+    fecha = "",
+    titulo = "",
+    detalle = "",
+    descripcion = "",
+    tipo = "",
+    impacto = "",
+    autor = ""
+  ] = row.concat(Array(8 - row.length).fill(""));
   if (!fecha || !titulo) return;
  
   const y = new Date(fecha).getFullYear();
