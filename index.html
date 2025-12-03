@@ -749,12 +749,6 @@ async function eliminarHito(id) {
   }
 }
  
-/* —————————— INICIALIZAR —————————— */
-window.onload = async () => {
-  await construirAnios();
-  await cargarHitos();
-};
- 
 /* —————————— REGISTRO SERVICE WORKER (PWA) —————————— */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
