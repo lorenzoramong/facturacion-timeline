@@ -459,12 +459,18 @@ auth.onAuthStateChanged(async user => {
     window.location.href = "login.html";
     return;
   }
+ 
   const rol = await obtenerRolUsuario(user.email);
   window.USER_ROLE = rol;
+ 
   if (rol !== "admin") {
     openPanelBtn.style.display = "none";
     sidePanel.style.display = "none";
   }
+ 
+  // 🔥 SOLO AQUÍ cargamos todo
+  await construirAnios();
+  await cargarHitos();
 });
   
 /* —————————— CREAR AÑOS —————————— */
