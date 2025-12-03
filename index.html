@@ -83,12 +83,12 @@ body {
   top: 260px;
   background: #0072bb;
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px 14px;
   font-size: 20px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,.15);
-  z-index: 999;
+  z-index: 1600;
   border: none;
 }
  
@@ -99,15 +99,17 @@ body {
   width: 240px;
   height: 100vh;
   background: #ffffffee;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(6px);
   padding: 20px;
   box-shadow: 4px 0 12px rgba(0,0,0,.15);
   transition: .3s;
-  z-index: 998;
+  z-index: 1500;
 }
  
 #filtersPanel.open {
+  transform: translateX(260px); /* se desplaza suavemente */
   left: 0;
+}
 }
 #filtersPanel h3 {
   margin-top: 0;
