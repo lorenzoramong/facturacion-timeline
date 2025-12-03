@@ -7,12 +7,11 @@
  
 <!-- PWA: manifest + tema + favicon -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0072bb">
-<link rel="icon" href="logo-gases.png" sizes="192x192">
-<link rel="apple-touch-icon" href="logo-gases.png">
+<meta name="theme-color" content="#0072bb" />
+<link rel="icon" href="icons/logo-192.png" />
+<link rel="apple-touch-icon" href="icons/logo-512.png" />
  
 <style>
-/* —————————— ESTILOS (IGUAL QUE TU ORIGINAL) —————————— */
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
@@ -77,25 +76,50 @@ body {
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 6px 16px rgba(0,0,0,0.22);
 }
-/* Filtros */
-.filters {
-  display: flex;
-  flex-direction: column;
+/* FILTROS — NUEVO SISTEMA (hamburguesa) */
+#filterMenuBtn {
   position: fixed;
   left: 20px;
   top: 260px;
-  gap: 10px;
-  background: #ffffffd0;
-  backdrop-filter: blur(8px);
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  z-index: 5;
+  background: #0072bb;
+  color: white;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  z-index: 999;
+  border: none;
 }
-select, input {
+ 
+#filtersPanel {
+  position: fixed;
+  left: -260px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: #ffffffee;
+  backdrop-filter: blur(5px);
+  padding: 20px;
+  box-shadow: 4px 0 12px rgba(0,0,0,.15);
+  transition: .3s;
+  z-index: 998;
+}
+ 
+#filtersPanel.open {
+  left: 0;
+}
+#filtersPanel h3 {
+  margin-top: 0;
+}
+ 
+#filtersPanel select,
+#filtersPanel input {
+  width: 100%;
+  margin-bottom: 12px;
   padding: 8px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #bbb;
 }
 /* Línea de años */
 .main-timeline {
@@ -301,6 +325,30 @@ select, input {
   Descargar reporte
 </button>
  
+  <!-- 🔵 NUEVO — BOTÓN HAMBURGUESA PARA FILTROS -->
+<button id="filterMenuBtn">☰</button>
+ 
+<!-- 🔵 NUEVO — PANEL LATERAL DE FILTROS -->
+<div id="filtersPanel">
+<h3>Filtros</h3>
+ 
+    <!-- 🔵 NUEVOS PERO USANDO TUS MISMOS SELECTS -->
+<select id="filterType">
+<option value="">Tipo</option>
+<option value="implementación">Implementación</option>
+<option value="incidente">Incidente</option>
+<option value="mejora">Mejora</option>
+</select>
+ 
+    <select id="filterImpact">
+<option value="">Impacto</option>
+<option value="alto">Alto</option>
+<option value="medio">Medio</option>
+<option value="bajo">Bajo</option>
+</select>
+ 
+    <input id="filterKeyword" placeholder="Buscar..." />
+</div>
 <!-- Menú de opciones de descarga -->
 <div id="downloadMenu" 
      style="display:none; position:fixed; top:150px; right:22px; background:white;
@@ -316,22 +364,6 @@ select, input {
 <p>Explorá los hitos más importantes por año</p>
 </div>
 </header>
- 
-<div class="filters">
-<select id="filterType">
-<option value="">Tipo</option>
-<option value="implementación">Implementación</option>
-<option value="incidente">Incidente</option>
-<option value="mejora">Mejora</option>
-</select>
-<select id="filterImpact">
-<option value="">Impacto</option>
-<option value="alto">Alto</option>
-<option value="medio">Medio</option>
-<option value="bajo">Bajo</option>
-</select>
-<input id="filterKeyword" placeholder="Buscar..." />
-</div>
  
 <section class="main-timeline" id="timeline"></section>
 <div id="yearDetailContainer"></div>
@@ -620,8 +652,8 @@ function aplicarFiltros() {
     ev.style.display = (matchT && matchI && matchK) ? "" : "none";
   });
 }
-filterType.onchange   =
-filterImpact.onchange =
+filterType.onchange   = aplicarFiltros;
+filterImpact.onchange = aplicarFiltros;
 filterKeyword.oninput = aplicarFiltros;
  
 /* —————————— ABRIR / CERRAR PANEL —————————— */
