@@ -1,0 +1,21 @@
+{
+  "name": "CAMINO GDC",
+  "short_name": "Camino GDC",
+  "description": "Línea de tiempo del proceso de facturación de Gases del Caribe",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0072bb",
+  "icons": [
+    {
+      "src": "logo-gases.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo-gases.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
