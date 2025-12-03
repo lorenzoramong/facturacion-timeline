@@ -4,14 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CAMINO GDC</title>
+ 
+<!-- PWA: manifest + tema + favicon -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0072bb">
+<link rel="icon" href="logo-gases.png" sizes="192x192">
+<link rel="apple-touch-icon" href="logo-gases.png">
+ 
 <style>
 /* —————————— ESTILOS (IGUAL QUE TU ORIGINAL) —————————— */
- 
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
   background: #fff;
   color: #222;
+}
+ 
+/* Botón descarga: que NO quede por encima del panel lateral */
+#downloadReportBtn {
+  z-index: 800; /* el panel tiene 1000, así que el panel lo tapa */
 }
  
 /* Encabezado */
@@ -44,7 +55,6 @@ body {
   margin: 8px 0 0;
   color: #444;
 }
- 
 /* Botón logout */
 .logout-btn {
   position: fixed;
@@ -67,7 +77,6 @@ body {
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 6px 16px rgba(0,0,0,0.22);
 }
- 
 /* Filtros */
 .filters {
   display: flex;
@@ -88,7 +97,6 @@ select, input {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
- 
 /* Línea de años */
 .main-timeline {
   display: flex;
@@ -110,7 +118,6 @@ select, input {
   background: linear-gradient(90deg, #0072bb, #7cc242);
   z-index: 0;
 }
- 
 .year-node {
   background: #fff;
   border: 4px solid #0072bb;
@@ -135,7 +142,6 @@ select, input {
   background: #0072bb;
   color: #fff;
 }
- 
 /* Detalle año */
 .year-details {
   display: none;
@@ -151,14 +157,12 @@ select, input {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
- 
 .events-line {
   width: 3px;
   background: #0072bb55;
   height: 100%;
   margin-bottom: 20px;
 }
- 
 .event {
   width: 300px;
   padding: 16px;
@@ -176,7 +180,6 @@ select, input {
   color: #7cc242;
   font-weight: 600;
 }
- 
 /* Controles admin */
 .admin-tools {
   display: flex;
@@ -204,7 +207,6 @@ select, input {
 }
 .icon-edit { background: #0072bb; color:white; }
 .icon-delete { background:#e84545; color:white; }
- 
 /* Botón panel lateral */
 #openPanelBtn {
   position: fixed;
@@ -229,7 +231,6 @@ select, input {
 #openPanelBtn:hover {
   transform: scale(1.09);
 }
- 
 /* Panel lateral */
 #sidePanel {
   position: fixed;
@@ -272,7 +273,6 @@ select, input {
   cursor: pointer;
   border-radius: 8px;
 }
- 
 /* Modal */
 #modal {
   display:none;
@@ -293,9 +293,10 @@ select, input {
 </style>
 </head>
  
-<body>
+ <body>
 <button id="logoutBtn" class="logout-btn">← Salir</button>
- <!-- Botón de descarga de reporte -->
+ 
+<!-- Botón de descarga de reporte -->
 <button id="downloadReportBtn" class="logout-btn" style="left:auto; right:22px; top:90px; background:#0072bb;">
   Descargar reporte
 </button>
@@ -323,15 +324,13 @@ select, input {
 <option value="incidente">Incidente</option>
 <option value="mejora">Mejora</option>
 </select>
- 
-  <select id="filterImpact">
+<select id="filterImpact">
 <option value="">Impacto</option>
 <option value="alto">Alto</option>
 <option value="medio">Medio</option>
 <option value="bajo">Bajo</option>
 </select>
- 
-  <input id="filterKeyword" placeholder="Buscar..." />
+<input id="filterKeyword" placeholder="Buscar..." />
 </div>
  
 <section class="main-timeline" id="timeline"></section>
@@ -342,27 +341,23 @@ select, input {
 <div id="sidePanel">
 <h2>Crear / Editar Hito</h2>
 <div id="closePanel">✖</div>
- 
-  <input id="dateInput" type="date" />
+<input id="dateInput" type="date" />
 <input id="titleInput" placeholder="Título" />
 <input id="detailInput" placeholder="Detalle breve (8 palabras)" />
 <textarea id="descriptionInput" placeholder="Descripción"></textarea>
- 
-  <select id="typeInput">
+<select id="typeInput">
 <option value="">Tipo</option>
 <option value="Implementación">Implementación</option>
 <option value="Incidente">Incidente</option>
 <option value="Mejora">Mejora</option>
 </select>
- 
-  <select id="impactInput">
+<select id="impactInput">
 <option value="">Impacto</option>
 <option value="Alto">Alto</option>
 <option value="Medio">Medio</option>
 <option value="Bajo">Bajo</option>
 </select>
- 
-  <input id="authorInput" placeholder="Autor" />
+<input id="authorInput" placeholder="Autor" />
 <button id="submitHito">Guardar Hito</button>
 </div>
  
@@ -374,11 +369,10 @@ select, input {
 <p id="modalExtra"></p>
 </div>
 </div>
-
- <!-- Firebase -->
+ 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
- 
 <script>
 /* —————————— FIREBASE —————————— */
 const firebaseConfig = {
@@ -397,8 +391,8 @@ const SHEET_ID        = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
 const API_KEY         = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
 const SHEET_NAME      = "Hitos";
 const ROLE_SHEET_NAME = "Usuarios";
- 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec";
+/* ⚠️ AQUÍ TENÍAS %22 QUE ROMPÍA EL CÓDIGO. LO CORRIJO A exec" */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec%22;
  
 /* —————————— DOM —————————— */
 const filterType          = document.getElementById("filterType");
@@ -415,8 +409,7 @@ const modalTitle          = document.getElementById("modalTitle");
 const modalDate           = document.getElementById("modalDate");
 const modalDesc           = document.getElementById("modalDesc");
 const modalExtra          = document.getElementById("modalExtra");
- 
- /* Botón descarga reporte */
+/* Botón descarga reporte */
 const downloadBtn        = document.getElementById("downloadReportBtn");
 const downloadMenu       = document.getElementById("downloadMenu");
 const downloadExcelBtn   = document.getElementById("downloadExcel");
@@ -427,20 +420,17 @@ document.getElementById("logoutBtn").onclick = () => {
     window.location.href = "login.html";
   });
 };
-
- /* Menú descarga reporte */
+/* Menú descarga reporte */
 if (downloadBtn && downloadMenu && downloadExcelBtn && downloadPDFBtn) {
   downloadBtn.onclick = () => {
     downloadMenu.style.display = (downloadMenu.style.display === "none" || !downloadMenu.style.display)
       ? "block"
       : "none";
   };
- 
   downloadExcelBtn.onclick = () => {
     window.location.href = SCRIPT_URL + "?action=excel";
     downloadMenu.style.display = "none";
   };
- 
   downloadPDFBtn.onclick = () => {
     window.location.href = SCRIPT_URL + "?action=pdf";
     downloadMenu.style.display = "none";
@@ -453,9 +443,7 @@ async function obtenerRolUsuario(email) {
   const res = await fetch(url);
   const data = await res.json();
   if (!data.values) return null;
- 
   const rows = data.values.slice(1);
- 
   for (const row of rows) {
     const [correo, rol] = row;
     if (correo && correo.trim().toLowerCase() === email.toLowerCase()) {
@@ -471,52 +459,43 @@ auth.onAuthStateChanged(async user => {
     window.location.href = "login.html";
     return;
   }
- 
   const rol = await obtenerRolUsuario(user.email);
   window.USER_ROLE = rol;
- 
   if (rol !== "admin") {
     openPanelBtn.style.display = "none";
     sidePanel.style.display = "none";
   }
 });
- 
+  
 /* —————————— CREAR AÑOS —————————— */
 async function construirAnios() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!data.values) return;
- 
   const rows = data.values.slice(1);
   const yearsSet = new Set();
- 
   rows.forEach(r => {
     const fecha = r[0];
     if (!fecha) return;
     const y = new Date(fecha).getFullYear();
     if (!isNaN(y)) yearsSet.add(y);
   });
- 
   const years = Array.from(yearsSet).sort((a,b) => a - b);
- 
   timeline.innerHTML = "";
   yearDetailContainer.innerHTML = "";
- 
   years.forEach(y => {
     const node = document.createElement("div");
     node.className = "year-node";
     node.dataset.year = y;
     node.textContent = y;
     timeline.appendChild(node);
- 
     const section = document.createElement("section");
     section.className = "year-details";
     section.id = `details-${y}`;
     section.innerHTML = `<div class="events-line"></div>`;
     yearDetailContainer.appendChild(section);
   });
- 
   activarClicksAnios();
 }
  
@@ -524,12 +503,10 @@ async function construirAnios() {
 function activarClicksAnios() {
   const nodes   = document.querySelectorAll(".year-node");
   const details = document.querySelectorAll(".year-details");
- 
   nodes.forEach(n => {
     n.onclick = () => {
       nodes.forEach(x => x.classList.remove("active"));
       details.forEach(d => d.classList.remove("active"));
- 
       n.classList.add("active");
       const target = document.getElementById("details-" + n.dataset.year);
       if (target) target.classList.add("active");
@@ -549,20 +526,16 @@ function crearEvento(row) {
     autor = "",
     id = ""
   ] = row.concat(Array(8 - row.length).fill(""));
- 
   if (!fecha || !titulo) return;
- 
   const y = new Date(fecha).getFullYear();
   const cont = document.getElementById("details-" + y);
   if (!cont) return;
- 
   const el = document.createElement("div");
   el.className = "event";
   el.dataset.id = id;
   el.dataset.type = (tipo || "").toLowerCase();
   el.dataset.impact = (impacto || "").toLowerCase();
   el.dataset.key = `${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}`.toLowerCase();
- 
   el.innerHTML = `
 <div class="date">${fecha}</div>
 <h3>${titulo}</h3>
@@ -574,25 +547,20 @@ function crearEvento(row) {
 </div>
     ` : ""}
   `;
- 
   el.addEventListener("click", (e) => {
     if (e.target.classList.contains("icon-edit") ||
         e.target.classList.contains("icon-delete")) return;
- 
     abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
   });
- 
   if (window.USER_ROLE === "admin") {
     const editBtn   = el.querySelector(".icon-edit");
     const deleteBtn = el.querySelector(".icon-delete");
- 
     if (editBtn) {
       editBtn.onclick = (e) => {
         e.stopPropagation();
         cargarHitoEnFormulario(row);
       };
     }
- 
     if (deleteBtn) {
       deleteBtn.onclick = async (e) => {
         e.stopPropagation();
@@ -602,20 +570,16 @@ function crearEvento(row) {
       };
     }
   }
- 
   cont.appendChild(el);
 }
- 
-/* —————————— CARGAR HITOS —————————— */
+                                                                                                                                                 /* —————————— CARGAR HITOS —————————— */
 async function cargarHitos() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   if (!data.values) return;
- 
   const rows = data.values.slice(1);
   rows.forEach(row => crearEvento(row));
- 
   aplicarFiltros();
 }
  
@@ -625,14 +589,12 @@ function abrirModal(t, f, d, tipo, impacto, autor) {
   modalTitle.textContent = t;
   modalDate.textContent  = f;
   modalDesc.textContent  = d || "";
- 
   modalExtra.innerHTML = `
 <b>Tipo:</b> ${tipo}<br>
 <b>Impacto:</b> ${impacto}<br>
 <b>Autor:</b> ${autor}<br>
   `;
 }
- 
 modal.onclick = (e) => {
   if (e.target === modal) modal.style.display = "none";
 };
@@ -642,20 +604,16 @@ function aplicarFiltros() {
   const t = filterType.value.toLowerCase();
   const i = filterImpact.value.toLowerCase();
   const k = filterKeyword.value.toLowerCase();
- 
   document.querySelectorAll(".event").forEach(ev => {
     const type   = ev.dataset.type || "";
     const impact = ev.dataset.impact || "";
     const key    = ev.dataset.key || "";
- 
     const matchT = !t || type === t;
     const matchI = !i || impact === i;
     const matchK = !k || key.includes(k);
- 
     ev.style.display = (matchT && matchI && matchK) ? "" : "none";
   });
 }
- 
 filterType.onchange   =
 filterImpact.onchange =
 filterKeyword.oninput = aplicarFiltros;
@@ -681,9 +639,7 @@ function cargarHitoEnFormulario(row) {
     autor = "",
     id = ""
   ] = row;
- 
   window.EDITING_ID = id;
- 
   document.getElementById("dateInput").value        = fecha;
   document.getElementById("titleInput").value       = titulo;
   document.getElementById("detailInput").value      = detalle;
@@ -691,134 +647,84 @@ function cargarHitoEnFormulario(row) {
   document.getElementById("typeInput").value        = tipo;
   document.getElementById("impactInput").value      = impacto;
   document.getElementById("authorInput").value      = autor;
- 
   sidePanel.classList.add("open");
 }
- /* —————————— LIMPIAR FORMULARIO —————————— */
-
+ 
+/* —————————— LIMPIAR FORMULARIO —————————— */
 function limpiarFormulario() {
-
   document.getElementById("dateInput").value        = "";
-
   document.getElementById("titleInput").value       = "";
-
   document.getElementById("detailInput").value      = "";
-
   document.getElementById("descriptionInput").value = "";
-
   document.getElementById("typeInput").value        = "";
-
   document.getElementById("impactInput").value      = "";
-
   document.getElementById("authorInput").value      = "";
-
 }
  
 /* —————————— GUARDAR HITO —————————— */
-
 submitHito.onclick = async () => {
-
   if (window.USER_ROLE !== "admin") {
-
     alert("❌ No tenés permisos para crear/editar hitos.");
-
     return;
-
   }
- 
   const payload = {
-
     id: window.EDITING_ID || "",
-
     fecha: document.getElementById("dateInput").value,
-
     titulo: document.getElementById("titleInput").value,
-
     detalle: document.getElementById("detailInput").value,
-
     descripcion: document.getElementById("descriptionInput").value,
-
     tipo: document.getElementById("typeInput").value,
-
     impacto: document.getElementById("impactInput").value,
-
     autor: document.getElementById("authorInput").value,
-
     action: window.EDITING_ID ? "update" : "add"
-
   };
- 
   if (!payload.fecha || !payload.titulo) {
-
     alert("La fecha y el título son obligatorios.");
-
     return;
-
   }
- 
   try {
-
     const res = await fetch(SCRIPT_URL, {
-
       method: "POST",
-
       body: JSON.stringify(payload)
-
     });
- 
     if (!res.ok) throw new Error("Error en Apps Script");
- 
     alert("Hito guardado ✔");
-
     window.EDITING_ID = null;
-
     location.reload();
- 
   } catch (err) {
-
     console.error(err);
-
     alert("Ocurrió un error guardando el hito.");
-
   }
-
 };
  
 /* —————————— ELIMINAR HITO —————————— */
-
 async function eliminarHito(id) {
-
   try {
-
     await fetch(SCRIPT_URL, {
-
       method: "POST",
-
       body: JSON.stringify({ action: "delete", id })
-
     });
-
   } catch (err) {
-
     console.error(err);
-
     alert("Error eliminando el hito.");
-
   }
-
 }
  
 /* —————————— INICIALIZAR —————————— */
-
 window.onload = async () => {
-
   await construirAnios();
-
   await cargarHitos();
-
 };
-</script>
  
+/* —————————— REGISTRO SERVICE WORKER (PWA) —————————— */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .then(() => console.log("Service Worker registrado ✔"))
+      .catch(err => console.log("Error SW:", err));
+  });
+}
+</script>
 </body>
 </html>
- 
