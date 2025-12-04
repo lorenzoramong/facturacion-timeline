@@ -11,17 +11,6 @@
 <link rel="icon" href="icons/logo-192.png" />
 <link rel="apple-touch-icon" href="icons/logo-512.png" />
  
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CAMINO GDC</title>
-<!-- PWA: manifest + tema + favicon -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0072bb" />
-<link rel="icon" href="icons/logo-192.png" />
-<link rel="apple-touch-icon" href="icons/logo-512.png" />
 <style>
 body {
   margin: 0;
@@ -89,7 +78,7 @@ body {
 #filterMenuBtn {
   position: fixed;
   left: 20px;
-  top: 160px;
+  top: 120px;
   background: #0072bb;
   color: white;
   border-radius: 8px;
@@ -506,6 +495,13 @@ auth.onAuthStateChanged(async user => {
     openPanelBtn.style.display = "none";
     sidePanel.style.display = "none";
   }
+   // 🔵 BOTÓN HAMBURGUESA — ABRIR / CERRAR FILTROS
+  const filterMenuBtn = document.getElementById("filterMenuBtn");
+  const filtersPanel  = document.getElementById("filtersPanel");
+ 
+  filterMenuBtn.onclick = () => {
+    filtersPanel.classList.toggle("open");
+  };
  
   // 🔥 SOLO AQUÍ cargamos todo
   await construirAnios();
