@@ -102,7 +102,7 @@ body {
 }
 #filtersPanel {
   position: fixed;
-  left: -260px;
+  left: -280px;
   top: 0;
   width: 240px;
   height: 100vh;
@@ -110,9 +110,8 @@ body {
   backdrop-filter: blur(6px);
   padding: 20px;
   box-shadow: 4px 0 12px rgba(0,0,0,.15);
-  transition: .3s;
+  transition: left .3s;
   z-index: 1500;
-transform: translateX(-260);
 }
 #filtersPanel.open {
   transform: translateX(0px); /* se desplaza suavemente */
