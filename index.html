@@ -448,6 +448,10 @@ body {
 <div id="tableViewPanel">
 <div id="closeTableView">✖</div>
 <h2>Listado Completo de Hitos</h2>
+
+ <!-- 🔵 NUEVO BOTÓN PARA SALIR DE LA TABLA -->
+<button id="backToTimeline">← Volver</button>
+ 
 <button id="downloadXLSX">📥 Descargar Excel</button>
 <div id="tableContainer">
 <table id="hitosTable">
@@ -987,11 +991,19 @@ openPanelBtn.onclick = () => {
 
   limpiarFormulario();
 
-  sidePanel.classList.add("open");
+  // 🔵 OCULTAR BOTÓN “VER TABLA”
+  openTableBtn.style.display = "none";
+  
+ sidePanel.classList.add("open");
 
 };
  
-closePanel.onclick = () => sidePanel.classList.remove("open");
+closePanel.onclick = () => {
+  sidePanel.classList.remove("open");
+ 
+  // 🔵 MOSTRAR BOTÓN “VER TABLA”
+  openTableBtn.style.display = "block";
+};
  
 function cargarHitoEnFormulario(row) {
 
@@ -1158,7 +1170,8 @@ const closeTableBtn = document.getElementById("closeTableView");
 const tableBody = document.querySelector("#hitosTable tbody");
 
 const downloadXLSXBtn = document.getElementById("downloadXLSX");
- 
+
+ const backToTimelineBtn = document.getElementById("backToTimeline");
 /* abrir */
 
 openTableBtn.onclick = async () => {
@@ -1175,6 +1188,11 @@ closeTableBtn.onclick = () => {
 
   tablePanel.style.display = "none";
 
+};
+
+ // 🔵 NUEVO: botón "Volver" hace lo mismo que la X
+backToTimelineBtn.onclick = () => {
+  tablePanel.style.display = "none";
 };
  
 /* cargar tabla */
