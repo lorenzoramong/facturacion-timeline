@@ -117,6 +117,20 @@ body {
   border-radius: 6px;
   border: 1px solid #bbb;
 }
+
+ #close-filters-btn {
+ position: absolute;
+ top: 12px;
+ right: 15px;
+ font-size: 22px;
+ cursor: pointer;
+ color: #0072bb;
+ font-weight: 600;
+ z-index: 2100;
+}
+.close-filters-btn:hover {
+ color: #005b96;
+}
 /* Línea de años */
 .main-timeline {
   display: flex;
@@ -321,30 +335,29 @@ body {
   Descargar reporte
 </button>
  
-  <!-- 🔵 NUEVO — BOTÓN HAMBURGUESA PARA FILTROS -->
+<!-- 🔵 NUEVO — BOTÓN HAMBURGUESA PARA FILTROS -->
 <button id="filterMenuBtn">☰</button>
- 
 <!-- 🔵 NUEVO — PANEL LATERAL DE FILTROS -->
 <div id="filtersPanel">
+<!-- 🔵 NUEVA “X” PARA CERRAR PANEL -->
+<div id="closeFilters" class="close-filters-btn">✖</div>
 <h3>Filtros</h3>
- 
-    <!-- 🔵 NUEVOS PERO USANDO TUS MISMOS SELECTS -->
+<!-- 🔵 USANDO TUS MISMOS SELECTS -->
 <select id="filterType">
 <option value="">Tipo</option>
 <option value="implementación">Implementación</option>
 <option value="incidente">Incidente</option>
 <option value="mejora">Mejora</option>
 </select>
- 
-    <select id="filterImpact">
+<select id="filterImpact">
 <option value="">Impacto</option>
 <option value="alto">Alto</option>
 <option value="medio">Medio</option>
 <option value="bajo">Bajo</option>
 </select>
- 
-    <input id="filterKeyword" placeholder="Buscar..." />
+<input id="filterKeyword" placeholder="Buscar..." />
 </div>
+  
 <!-- Menú de opciones de descarga -->
 <div id="downloadMenu" 
      style="display:none; position:fixed; top:150px; right:22px; background:white;
@@ -496,12 +509,15 @@ auth.onAuthStateChanged(async user => {
     sidePanel.style.display = "none";
   }
    // 🔵 BOTÓN HAMBURGUESA — ABRIR / CERRAR FILTROS
-  const filterMenuBtn = document.getElementById("filterMenuBtn");
-  const filtersPanel  = document.getElementById("filtersPanel");
- 
-  filterMenuBtn.onclick = () => {
-    filtersPanel.classList.toggle("open");
-  };
+const filterMenuBtn = document.getElementById("filterMenuBtn");
+const filtersPanel  = document.getElementById("filtersPanel");
+const closeFilters  = document.getElementById("closeFilters");
+filterMenuBtn.onclick = () => {
+ filtersPanel.classList.toggle("open");
+};
+closeFilters.onclick = () => {
+ filtersPanel.classList.remove("open");
+};
  
   // 🔥 SOLO AQUÍ cargamos todo
   await construirAnios();
