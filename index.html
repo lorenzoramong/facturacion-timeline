@@ -117,6 +117,11 @@ body {
   border-radius: 6px;
   border: 1px solid #bbb;
 }
+/* Hace visibles todos los eventos de todos los años cuando hay filtros activos */
+.show-all .year-details {
+ display: flex !important;
+ animation: fadeIn .3s;
+}
 
  .close-filters-btn {
  position: absolute;
@@ -658,18 +663,25 @@ modal.onclick = (e) => {
  
 /* —————————— FILTROS —————————— */
 function aplicarFiltros() {
-  const t = filterType.value.toLowerCase();
-  const i = filterImpact.value.toLowerCase();
-  const k = filterKeyword.value.toLowerCase();
-  document.querySelectorAll(".event").forEach(ev => {
-    const type   = ev.dataset.type || "";
-    const impact = ev.dataset.impact || "";
-    const key    = ev.dataset.key || "";
-    const matchT = !t || type === t;
-    const matchI = !i || impact === i;
-    const matchK = !k || key.includes(k);
-    ev.style.display = (matchT && matchI && matchK) ? "" : "none";
-  });
+ const t = filterType.value.toLowerCase();
+ const i = filterImpact.value.toLowerCase();
+ const k = filterKeyword.value.toLowerCase();
+ // si hay filtros → mostrarlos todos
+ const usandoFiltros = t || i || k;
+ if (usandoFiltros) {
+   yearDetailContainer.classList.add("show-all");
+ } else {
+   yearDetailContainer.classList.remove("show-all");
+ }
+ document.querySelectorAll(".event").forEach(ev => {
+   const type   = ev.dataset.type || "";
+   const impact = ev.dataset.impact || "";
+   const key    = ev.dataset.key || "";
+   const matchT = !t || type === t;
+   const matchI = !i || impact === i;
+   const matchK = !k || key.includes(k);
+   ev.style.display = (matchT && matchI && matchK) ? "" : "none";
+ });
 }
 filterType.onchange   = aplicarFiltros;
 filterImpact.onchange = aplicarFiltros;
