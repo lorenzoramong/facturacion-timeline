@@ -383,6 +383,7 @@ body {
  margin-bottom: 15px;
 }
 </style>
+ 
 <!-- █████ AGREGADO: Librería XLSX -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
@@ -442,7 +443,30 @@ body {
  
 <section class="main-timeline" id="timeline"></section>
 <div id="yearDetailContainer"></div>
- 
+
+  <!-- ▬▬▬▬▬ PANEL COMPLETO DE TABLA DE HITOS ▬▬▬▬▬ -->
+<div id="tableViewPanel">
+<div id="closeTableView">✖</div>
+<h2>Listado Completo de Hitos</h2>
+<button id="downloadXLSX">📥 Descargar Excel</button>
+<div id="tableContainer">
+<table id="hitosTable">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Título</th>
+<th>Detalle</th>
+<th>Descripción</th>
+<th>Tipo</th>
+<th>Impacto</th>
+<th>Autor</th>
+<th>ID</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
 <button id="openPanelBtn">+</button>
  
 <div id="sidePanel">
@@ -481,455 +505,735 @@ body {
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script>
+
 /* —————————— FIREBASE —————————— */
+
 const firebaseConfig = {
+
   apiKey: "AIzaSyABOt5v_tBFjXttFlogHPnOY9l_T_a7g0c",
+
   authDomain: "camino-gdc.firebaseapp.com",
+
   projectId: "camino-gdc",
+
   storageBucket: "camino-gdc.firebasestorage.app",
+
   messagingSenderId: "1053392006260",
+
   appId: "1:1053392006260:web:8c39450408566f14987521"
+
 };
+
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
  
 /* —————————— CONFIG GOOGLE SHEETS —————————— */
+
 const SHEET_ID        = "13SfGnF5EZduKG6_NjeCWPeY63uR48yEfvVTyGF6j_bA";
+
 const API_KEY         = "AIzaSyDI7q9YVBaK24yBQtP08SU4uOJiFsXmMaQ";
+
 const SHEET_NAME      = "Hitos";
+
 const ROLE_SHEET_NAME = "Usuarios";
-/* ⚠️ AQUÍ TENÍAS %22 QUE ROMPÍA EL CÓDIGO. LO CORRIJO A exec" */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec";
+ 
+/* ❗ ARREGLADO: tenías %22 al final */
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjthogZdAEo1Irk_Dy8cgiJyG2o4YHgdzf2hC5a-3V1A7VZOMemGa4ilvNWcp_-gSX/exec%22;
  
 /* —————————— DOM —————————— */
+
 const filterType          = document.getElementById("filterType");
+
 const filterImpact        = document.getElementById("filterImpact");
+
 const filterKeyword       = document.getElementById("filterKeyword");
+
 const openPanelBtn        = document.getElementById("openPanelBtn");
+
 const sidePanel           = document.getElementById("sidePanel");
+
 const closePanel          = document.getElementById("closePanel");
+
 const submitHito          = document.getElementById("submitHito");
+
 const timeline            = document.getElementById("timeline");
+
 const yearDetailContainer = document.getElementById("yearDetailContainer");
+
 const modal               = document.getElementById("modal");
+
 const modalTitle          = document.getElementById("modalTitle");
+
 const modalDate           = document.getElementById("modalDate");
+
 const modalDesc           = document.getElementById("modalDesc");
+
 const modalExtra          = document.getElementById("modalExtra");
-/* Botón descarga reporte */
+ 
+/* Descarga */
+
 const downloadBtn        = document.getElementById("downloadReportBtn");
+
 const downloadMenu       = document.getElementById("downloadMenu");
+
 const downloadExcelBtn   = document.getElementById("downloadExcel");
+
 const downloadPDFBtn     = document.getElementById("downloadPDF");
  
+/* Cerrar sesión */
+
 document.getElementById("logoutBtn").onclick = () => {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
-  });
+
+  auth.signOut().then(() => window.location.href = "login.html");
+
 };
-/* Menú descarga reporte */
-if (downloadBtn && downloadMenu && downloadExcelBtn && downloadPDFBtn) {
+ 
+/* Menú de descarga */
+
+if (downloadBtn && downloadMenu) {
+
   downloadBtn.onclick = () => {
-    downloadMenu.style.display = (downloadMenu.style.display === "none" || !downloadMenu.style.display)
-      ? "block"
-      : "none";
+
+    downloadMenu.style.display =
+
+      downloadMenu.style.display === "block" ? "none" : "block";
+
   };
+ 
   downloadExcelBtn.onclick = () => {
+
     window.location.href = SCRIPT_URL + "?action=excel";
+
     downloadMenu.style.display = "none";
+
   };
+ 
   downloadPDFBtn.onclick = () => {
+
     window.location.href = SCRIPT_URL + "?action=pdf";
+
     downloadMenu.style.display = "none";
+
   };
+
 }
  
 /* —————————— ROL DESDE GOOGLE SHEETS —————————— */
+
 async function obtenerRolUsuario(email) {
+
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${ROLE_SHEET_NAME}?key=${API_KEY}`;
+
   const res = await fetch(url);
+
   const data = await res.json();
+
   if (!data.values) return null;
+
   const rows = data.values.slice(1);
+ 
   for (const row of rows) {
+
     const [correo, rol] = row;
+
     if (correo && correo.trim().toLowerCase() === email.toLowerCase()) {
+
       return (rol || "").trim().toLowerCase();
+
     }
+
   }
+
   return null;
+
 }
  
 /* —————————— AUTH —————————— */
+
 auth.onAuthStateChanged(async user => {
+
   if (!user) {
+
     window.location.href = "login.html";
+
     return;
+
   }
  
   const rol = await obtenerRolUsuario(user.email);
+
   window.USER_ROLE = rol;
  
   if (rol !== "admin") {
+
     openPanelBtn.style.display = "none";
+
     sidePanel.style.display = "none";
+
   }
-   // 🔵 BOTÓN HAMBURGUESA — ABRIR / CERRAR FILTROS
-const filterMenuBtn = document.getElementById("filterMenuBtn");
-const filtersPanel  = document.getElementById("filtersPanel");
-const closeFilters  = document.getElementById("closeFilters");
-filterMenuBtn.onclick = () => {
- filtersPanel.classList.toggle("open");
-};
-closeFilters.onclick = () => {
- filtersPanel.classList.remove("open");
-};
  
-  // 🔥 SOLO AQUÍ cargamos todo
+  /* FILTROS */
+
+  const filterMenuBtn = document.getElementById("filterMenuBtn");
+
+  const filtersPanel  = document.getElementById("filtersPanel");
+
+  const closeFilters  = document.getElementById("closeFilters");
+ 
+  filterMenuBtn.onclick = () => filtersPanel.classList.toggle("open");
+
+  closeFilters.onclick = () => filtersPanel.classList.remove("open");
+ 
+  /* Construir */
+
   await construirAnios();
+
   await cargarHitos();
+
 });
-  
+ 
 /* —————————— CREAR AÑOS —————————— */
+
 async function construirAnios() {
+
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
   const res = await fetch(url);
+
   const data = await res.json();
+
   if (!data.values) return;
+ 
   const rows = data.values.slice(1);
+
   const yearsSet = new Set();
+ 
   rows.forEach(r => {
+
     const fecha = r[0];
+
     if (!fecha) return;
+
     const y = new Date(fecha).getFullYear();
+
     if (!isNaN(y)) yearsSet.add(y);
+
   });
+ 
   const years = Array.from(yearsSet).sort((a,b) => a - b);
+
   timeline.innerHTML = "";
+
   yearDetailContainer.innerHTML = "";
+ 
   years.forEach(y => {
+
     const node = document.createElement("div");
+
     node.className = "year-node";
+
     node.dataset.year = y;
+
     node.textContent = y;
+
     timeline.appendChild(node);
+ 
     const section = document.createElement("section");
+
     section.className = "year-details";
+
     section.id = `details-${y}`;
+
     section.innerHTML = `<div class="events-line"></div>`;
+
     yearDetailContainer.appendChild(section);
+
   });
+ 
   activarClicksAnios();
+
 }
  
 /* —————————— CLICK EN AÑOS —————————— */
+
 function activarClicksAnios() {
+
   const nodes   = document.querySelectorAll(".year-node");
+
   const details = document.querySelectorAll(".year-details");
+ 
   nodes.forEach(n => {
+
     n.onclick = () => {
+
       nodes.forEach(x => x.classList.remove("active"));
+
       details.forEach(d => d.classList.remove("active"));
+
       n.classList.add("active");
-      const target = document.getElementById("details-" + n.dataset.year);
+
+      const target = document.getElementById(`details-${n.dataset.year}`);
+
       if (target) target.classList.add("active");
+
     };
+
   });
+
 }
  
-/* —————————— CREAR TARJETA —————————— */
+/* —————————— CREAR EVENTO —————————— */
+
 function crearEvento(row) {
+
   const [
-    fecha = "",
-    titulo = "",
-    detalle = "",
-    descripcion = "",
-    tipo = "",
-    impacto = "",
-    autor = "",
-    id = ""
-  ] = row.concat(Array(8 - row.length).fill(""));
+
+    fecha="", titulo="", detalle="", descripcion="",
+
+    tipo="", impacto="", autor="", id=""
+
+  ] = row.concat(Array(8-row.length).fill(""));
+ 
   if (!fecha || !titulo) return;
+ 
   const y = new Date(fecha).getFullYear();
+
   const cont = document.getElementById("details-" + y);
+
   if (!cont) return;
+ 
   const el = document.createElement("div");
+
   el.className = "event";
+
   el.dataset.id = id;
+
   el.dataset.type = (tipo || "").toLowerCase();
+
   el.dataset.impact = (impacto || "").toLowerCase();
-  el.dataset.key = `${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}`.toLowerCase();
+
+  el.dataset.key =
+
+    `${fecha} ${titulo} ${detalle} ${descripcion} ${tipo} ${impacto} ${autor}`.toLowerCase();
+ 
   el.innerHTML = `
 <div class="date">${fecha}</div>
 <h3>${titulo}</h3>
-<p>${detalle || ""}</p>
-    ${window.USER_ROLE === "admin" ? `
-<div class="admin-tools">
-<button class="icon-btn icon-edit" data-id="${id}" title="Editar">✎</button>
-<button class="icon-btn icon-delete" data-id="${id}" title="Eliminar">🗑</button>
-</div>
-    ` : ""}
+<p>${detalle}</p>
+
+    ${
+
+      window.USER_ROLE === "admin"
+
+        ? `<div class="admin-tools">
+<button class="icon-btn icon-edit" data-id="${id}">✎</button>
+<button class="icon-btn icon-delete" data-id="${id}">🗑</button>
+</div>`
+
+        : ""
+
+    }
+
   `;
-  el.addEventListener("click", (e) => {
+ 
+  el.onclick = (e) => {
+
     if (e.target.classList.contains("icon-edit") ||
+
         e.target.classList.contains("icon-delete")) return;
+
     abrirModal(titulo, fecha, descripcion, tipo, impacto, autor);
-  });
+
+  };
+ 
   if (window.USER_ROLE === "admin") {
-    const editBtn   = el.querySelector(".icon-edit");
-    const deleteBtn = el.querySelector(".icon-delete");
+
+    const editBtn = el.querySelector(".icon-edit");
+
+    const delBtn  = el.querySelector(".icon-delete");
+ 
     if (editBtn) {
+
       editBtn.onclick = (e) => {
+
         e.stopPropagation();
+
         cargarHitoEnFormulario(row);
+
       };
+
     }
-    if (deleteBtn) {
-      deleteBtn.onclick = async (e) => {
+
+    if (delBtn) {
+
+      delBtn.onclick = async (e) => {
+
         e.stopPropagation();
-        if (!confirm("¿Seguro que deseas eliminar este hito?")) return;
+
+        if (!confirm("¿Eliminar este hito?")) return;
+
         await eliminarHito(id);
+
         location.reload();
+
       };
+
     }
+
   }
+ 
   cont.appendChild(el);
+
 }
-                                                                                                                                                 /* —————————— CARGAR HITOS —————————— */
+ 
+/* —————————— CARGAR HITOS —————————— */
+
 async function cargarHitos() {
+
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
   const res = await fetch(url);
+
   const data = await res.json();
+
   if (!data.values) return;
+ 
   const rows = data.values.slice(1);
+
   rows.forEach(row => crearEvento(row));
+
   aplicarFiltros();
+
 }
  
 /* —————————— MODAL —————————— */
+
 function abrirModal(t, f, d, tipo, impacto, autor) {
+
   modal.style.display = "flex";
+
   modalTitle.textContent = t;
+
   modalDate.textContent  = f;
+
   modalDesc.textContent  = d || "";
+
   modalExtra.innerHTML = `
 <b>Tipo:</b> ${tipo}<br>
 <b>Impacto:</b> ${impacto}<br>
-<b>Autor:</b> ${autor}<br>
+<b>Autor:</b> ${autor}
+
   `;
+
 }
+ 
 modal.onclick = (e) => {
+
   if (e.target === modal) modal.style.display = "none";
+
 };
  
 /* —————————— FILTROS —————————— */
+
 function aplicarFiltros() {
- const t = filterType.value.toLowerCase();
- const i = filterImpact.value.toLowerCase();
- const k = filterKeyword.value.toLowerCase();
- // si hay filtros → mostrarlos todos
- const usandoFiltros = t || i || k;
- if (usandoFiltros) {
-   yearDetailContainer.classList.add("show-all");
- } else {
-   yearDetailContainer.classList.remove("show-all");
- }
- document.querySelectorAll(".event").forEach(ev => {
-   const type   = ev.dataset.type || "";
-   const impact = ev.dataset.impact || "";
-   const key    = ev.dataset.key || "";
-   const matchT = !t || type === t;
-   const matchI = !i || impact === i;
-   const matchK = !k || key.includes(k);
-   ev.style.display = (matchT && matchI && matchK) ? "" : "none";
- });
-}
-filterType.onchange   = aplicarFiltros;
-filterImpact.onchange = aplicarFiltros;
-filterKeyword.oninput = aplicarFiltros;
+
+  const t = filterType.value.toLowerCase();
+
+  const i = filterImpact.value.toLowerCase();
+
+  const k = filterKeyword.value.toLowerCase();
  
-/* —————————— ABRIR / CERRAR PANEL —————————— */
+  const usando = t || i || k;
+ 
+  if (usando) {
+
+    yearDetailContainer.classList.add("show-all");
+
+  } else {
+
+    yearDetailContainer.classList.remove("show-all");
+
+  }
+ 
+  document.querySelectorAll(".event").forEach(ev => {
+
+    const matchT = !t || ev.dataset.type === t;
+
+    const matchI = !i || ev.dataset.impact === i;
+
+    const matchK = !k || ev.dataset.key.includes(k);
+ 
+    ev.style.display = (matchT && matchI && matchK) ? "" : "none";
+
+  });
+
+}
+ 
+filterType.onchange   = aplicarFiltros;
+
+filterImpact.onchange = aplicarFiltros;
+
+filterKeyword.oninput = aplicarFiltros;
+Google Drive: inicio de sesión
+Accede a Google Drive con una cuenta de Google (para uso personal) o una cuenta de Google Workspace (para uso corporativo).
+ 
+/* —————————— PANEL LATERAL —————————— */
+
 openPanelBtn.onclick = () => {
+
   if (window.USER_ROLE !== "admin") return;
+
   window.EDITING_ID = null;
+
   limpiarFormulario();
+
   sidePanel.classList.add("open");
+
 };
+ 
 closePanel.onclick = () => sidePanel.classList.remove("open");
  
-/* —————————— CARGAR EN FORMULARIO —————————— */
 function cargarHitoEnFormulario(row) {
+
   const [
-    fecha = "",
-    titulo = "",
-    detalle = "",
-    descripcion = "",
-    tipo = "",
-    impacto = "",
-    autor = "",
-    id = ""
+
+    fecha="", titulo="", detalle="", descripcion="",
+
+    tipo="", impacto="", autor="", id=""
+
   ] = row;
+ 
   window.EDITING_ID = id;
-  document.getElementById("dateInput").value        = fecha;
-  document.getElementById("titleInput").value       = titulo;
-  document.getElementById("detailInput").value      = detalle;
+ 
+  document.getElementById("dateInput").value = fecha;
+
+  document.getElementById("titleInput").value = titulo;
+
+  document.getElementById("detailInput").value = detalle;
+
   document.getElementById("descriptionInput").value = descripcion;
-  document.getElementById("typeInput").value        = tipo;
-  document.getElementById("impactInput").value      = impacto;
-  document.getElementById("authorInput").value      = autor;
+
+  document.getElementById("typeInput").value = tipo;
+
+  document.getElementById("impactInput").value = impacto;
+
+  document.getElementById("authorInput").value = autor;
+ 
   sidePanel.classList.add("open");
+
 }
  
-/* —————————— LIMPIAR FORMULARIO —————————— */
 function limpiarFormulario() {
-  document.getElementById("dateInput").value        = "";
-  document.getElementById("titleInput").value       = "";
-  document.getElementById("detailInput").value      = "";
+
+  document.getElementById("dateInput").value = "";
+
+  document.getElementById("titleInput").value = "";
+
+  document.getElementById("detailInput").value = "";
+
   document.getElementById("descriptionInput").value = "";
-  document.getElementById("typeInput").value        = "";
-  document.getElementById("impactInput").value      = "";
-  document.getElementById("authorInput").value      = "";
+
+  document.getElementById("typeInput").value = "";
+
+  document.getElementById("impactInput").value = "";
+
+  document.getElementById("authorInput").value = "";
+
 }
  
-/* —————————— GUARDAR HITO —————————— */
+/* —————————— GUARDAR —————————— */
+
 submitHito.onclick = async () => {
+
   if (window.USER_ROLE !== "admin") {
-    alert("❌ No tenés permisos para crear/editar hitos.");
+
+    alert("No tenés permisos.");
+
     return;
+
   }
+ 
   const payload = {
+
     id: window.EDITING_ID || "",
+
     fecha: document.getElementById("dateInput").value,
+
     titulo: document.getElementById("titleInput").value,
+
     detalle: document.getElementById("detailInput").value,
+
     descripcion: document.getElementById("descriptionInput").value,
+
     tipo: document.getElementById("typeInput").value,
+
     impacto: document.getElementById("impactInput").value,
+
     autor: document.getElementById("authorInput").value,
+
     action: window.EDITING_ID ? "update" : "add"
+
   };
+ 
   if (!payload.fecha || !payload.titulo) {
+
     alert("La fecha y el título son obligatorios.");
+
     return;
+
   }
+ 
   try {
+
     const res = await fetch(SCRIPT_URL, {
+
       method: "POST",
+
       body: JSON.stringify(payload)
+
     });
-    if (!res.ok) throw new Error("Error en Apps Script");
-    alert("Hito guardado ✔");
+ 
+    if (!res.ok) throw new Error("Error en script");
+ 
+    alert("Guardado ✔");
+
     window.EDITING_ID = null;
+
     location.reload();
+
   } catch (err) {
+
     console.error(err);
-    alert("Ocurrió un error guardando el hito.");
+
+    alert("Error guardando.");
+
   }
+
 };
  
-/* —————————— ELIMINAR HITO —————————— */
+/* —————————— ELIMINAR —————————— */
+
 async function eliminarHito(id) {
+
   try {
+
     await fetch(SCRIPT_URL, {
+
       method: "POST",
+
       body: JSON.stringify({ action: "delete", id })
+
     });
+
   } catch (err) {
+
     console.error(err);
-    alert("Error eliminando el hito.");
+
+    alert("Error eliminando.");
+
   }
+
 }
  
-/* —————————— REGISTRO SERVICE WORKER (PWA) —————————— */
+/* —————————— PWA —————————— */
+
 if ("serviceWorker" in navigator) {
+
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("service-worker.js")
-      .then(() => console.log("Service Worker registrado ✔"))
-      .catch(err => console.log("Error SW:", err));
+
+    navigator.serviceWorker.register("service-worker.js");
+
   });
+
 }
- /* ▬▬▬▬▬▬▬▬▬ PANEL DE TABLA DE HITOS ▬▬▬▬▬▬▬▬▬ */
  
+/* —————————— TABLA DE HITOS —————————— */
+
 const tablePanel = document.getElementById("tableViewPanel");
+
 const openTableBtn = document.getElementById("openTableViewBtn");
+
 const closeTableBtn = document.getElementById("closeTableView");
+
 const tableBody = document.querySelector("#hitosTable tbody");
+
 const downloadXLSXBtn = document.getElementById("downloadXLSX");
  
+/* abrir */
+
 openTableBtn.onclick = async () => {
-    tablePanel.style.display = "flex";
-    await cargarTablaHitos();
+
+  tablePanel.style.display = "flex";
+
+  await cargarTablaHitos();
+
 };
  
+/* cerrar */
+
 closeTableBtn.onclick = () => {
-    tablePanel.style.display = "none";
+
+  tablePanel.style.display = "none";
+
 };
  
-/* Cargar la tabla con todos los hitos */
+/* cargar tabla */
+
 async function cargarTablaHitos() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.values) return;
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
+  const res = await fetch(url);
+
+  const data = await res.json();
  
-    const rows = data.values.slice(1);
+  if (!data.values) return;
  
-    tableBody.innerHTML = "";
+  const rows = data.values.slice(1);
+
+  tableBody.innerHTML = "";
  
-    rows.forEach(r => {
-        const tr = document.createElement("tr");
-        r.forEach(col => {
-            const td = document.createElement("td");
-            td.textContent = col || "";
-            tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
+  rows.forEach(r => {
+
+    const tr = document.createElement("tr");
+
+    r.forEach(col => {
+
+      const td = document.createElement("td");
+
+      td.textContent = col || "";
+
+      tr.appendChild(td);
+
     });
+
+    tableBody.appendChild(tr);
+
+  });
+
 }
  
 /* Descargar Excel */
+
 downloadXLSXBtn.onclick = async () => {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+
+  const res = await fetch(url);
+
+  const data = await res.json();
  
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(data.values);
- 
-    XLSX.utils.book_append_sheet(wb, ws, "Hitos");
- 
-    XLSX.writeFile(wb, "hitos_camino_gdc.xlsx");
+  const wb = XLSX.utils.book_new();
+
+  const ws = XLSX.utils.aoa_to_sheet(data.values);
+
+  XLSX.utils.book_append_sheet(wb, ws, "Hitos");
+
+  XLSX.writeFile(wb, "hitos_camino_gdc.xlsx");
+
 };
 </script>
-  <!-- ▬▬▬▬▬ PANEL COMPLETO DE TABLA DE HITOS ▬▬▬▬▬ -->
-<div id="tableViewPanel">
- 
-  <div id="closeTableView">✖</div>
- 
-  <h2>Listado Completo de Hitos</h2>
- 
-  <button id="downloadXLSX">📥 Descargar Excel</button>
- 
-  <div id="tableContainer">
-<table id="hitosTable">
-<thead>
-<tr>
-<th>Fecha</th>
-<th>Título</th>
-<th>Detalle</th>
-<th>Descripción</th>
-<th>Tipo</th>
-<th>Impacto</th>
-<th>Autor</th>
-<th>ID</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
- 
-</div>
-
 </body>
 </html>
