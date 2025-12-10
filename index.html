@@ -4,126 +4,127 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CAMINO GDC</title>
- 
-<!-- PWA: manifest + tema + favicon -->
+
+ <!-- PWA: manifest + tema + favicon -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0072bb" />
 <link rel="icon" href="icons/logo-192.png" />
 <link rel="apple-touch-icon" href="icons/logo-512.png" />
- 
 <style>
+ <!-- Librería para generar archivos .xlsx -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+ 
 body {
-  margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #fff;
-  color: #222;
+ margin: 0;
+ font-family: "Inter", sans-serif;
+ background: #fff;
+ color: #222;
 }
 /* Botón descarga: que NO quede por encima del panel lateral */
 #downloadReportBtn {
-  z-index: 800; /* el panel tiene 1000, así que el panel lo tapa */
+ z-index: 800; /* el panel tiene 1000, así que el panel lo tapa */
 }
 /* Encabezado */
 .hero {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px 40px;
-  gap: 20px;
-  background: linear-gradient(135deg, #eaf6ff, #d3f7e4);
-  border-bottom: 1px solid #e3eaf0;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 60px 20px 40px;
+ gap: 20px;
+ background: linear-gradient(135deg, #eaf6ff, #d3f7e4);
+ border-bottom: 1px solid #e3eaf0;
 }
 .hero-logo {
-  width: 95px;
-  height: 95px;
-  object-fit: contain;
-  animation: float 3s ease-in-out infinite;
+ width: 95px;
+ height: 95px;
+ object-fit: contain;
+ animation: float 3s ease-in-out infinite;
 }
 @keyframes float {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+ 0%,100% { transform: translateY(0); }
+ 50% { transform: translateY(-6px); }
 }
 .hero-text h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  margin: 0;
-  color: #0072bb;
+ font-size: 2.4rem;
+ font-weight: 700;
+ margin: 0;
+ color: #0072bb;
 }
 .hero-text p {
-  margin: 8px 0 0;
-  color: #444;
+ margin: 8px 0 0;
+ color: #444;
 }
 /* Botón logout */
 .logout-btn {
-  position: fixed;
-  top: 22px;
-  left: 22px;
-  padding: 10px 18px;
-  font-size: 15px;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #0072bb, #7cc242);
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-  transition: all 0.2s ease;
-  z-index: 1200;
-  backdrop-filter: blur(4px);
+ position: fixed;
+ top: 22px;
+ left: 22px;
+ padding: 10px 18px;
+ font-size: 15px;
+ font-weight: 600;
+ color: white;
+ background: linear-gradient(135deg, #0072bb, #7cc242);
+ border: none;
+ border-radius: 10px;
+ cursor: pointer;
+ box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+ transition: all 0.2s ease;
+ z-index: 1200;
+ backdrop-filter: blur(4px);
 }
 .logout-btn:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+ transform: translateY(-2px) scale(1.04);
+ box-shadow: 0 6px 16px rgba(0,0,0,0.22);
 }
 /* FILTROS — NUEVO SISTEMA (hamburguesa) */
 #filterMenuBtn {
-  position: fixed;
-  left: 20px;
-  top: 120px;
-  background: #0072bb;
-  color: white;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,.15);
-  z-index: 1200;
-  border: none;
+ position: fixed;
+ left: 20px;
+ top: 120px;
+ background: #0072bb;
+ color: white;
+ border-radius: 8px;
+ padding: 10px 14px;
+ font-size: 20px;
+ cursor: pointer;
+ box-shadow: 0 4px 10px rgba(0,0,0,.15);
+ z-index: 1200;
+ border: none;
 }
 #filtersPanel {
-  position: fixed;
-  left: -280px;
-  top: 0;
-  width: 240px;
-  height: 100vh;
-  background: #ffffffee;
-  backdrop-filter: blur(6px);
-  padding: 20px;
-  box-shadow: 4px 0 12px rgba(0,0,0,.15);
-  transition: left .3s;
-  z-index: 2000;
+ position: fixed;
+ left: -280px;
+ top: 0;
+ width: 240px;
+ height: 100vh;
+ background: #ffffffee;
+ backdrop-filter: blur(6px);
+ padding: 20px;
+ box-shadow: 4px 0 12px rgba(0,0,0,.15);
+ transition: left .3s;
+ z-index: 2000;
 }
 #filtersPanel.open {
-  transform: translateX(0px); /* se desplaza suavemente */
-  left: 0;
+ transform: translateX(0px);
+ left: 0;
 }
 #filtersPanel h3 {
-  margin-top: 0;
+ margin-top: 0;
 }
 #filtersPanel select,
 #filtersPanel input {
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #bbb;
+ width: 100%;
+ margin-bottom: 12px;
+ padding: 8px;
+ border-radius: 6px;
+ border: 1px solid #bbb;
 }
 /* Hace visibles todos los eventos de todos los años cuando hay filtros activos */
 .show-all .year-details {
  display: flex !important;
  animation: fadeIn .3s;
 }
-
- .close-filters-btn {
+.close-filters-btn {
  position: absolute;
  top: 12px;
  right: 15px;
@@ -138,203 +139,263 @@ body {
 }
 /* Línea de años */
 .main-timeline {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 90px;
-  margin: 70px auto;
-  padding: 10px;
-  max-width: 1100px;
-  position: relative;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ gap: 90px;
+ margin: 70px auto;
+ padding: 10px;
+ max-width: 1100px;
+ position: relative;
 }
 .main-timeline::before {
-  content: "";
-  position: absolute;
-  top: 58%;
-  left: 5%;
-  right: 5%;
-  height: 4px;
-  background: linear-gradient(90deg, #0072bb, #7cc242);
-  z-index: 0;
+ content: "";
+ position: absolute;
+ top: 58%;
+ left: 5%;
+ right: 5%;
+ height: 4px;
+ background: linear-gradient(90deg, #0072bb, #7cc242);
+ z-index: 0;
 }
 .year-node {
-  background: #fff;
-  border: 4px solid #0072bb;
-  border-radius: 50%;
-  width: 75px;
-  height: 75px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  cursor: pointer;
-  transition: .25s;
-  z-index: 2;
+ background: #fff;
+ border: 4px solid #0072bb;
+ border-radius: 50%;
+ width: 75px;
+ height: 75px;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ font-weight: bold;
+ cursor: pointer;
+ transition: .25s;
+ z-index: 2;
 }
 .year-node.active {
-  background: #7cc242;
-  color: #fff;
-  border-color: #7cc242;
+ background: #7cc242;
+ color: #fff;
+ border-color: #7cc242;
 }
 .year-node:hover {
-  transform: scale(1.1);
-  background: #0072bb;
-  color: #fff;
+ transform: scale(1.1);
+ background: #0072bb;
+ color: #fff;
 }
 /* Detalle año */
 .year-details {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 40px;
+ display: none;
+ flex-direction: column;
+ align-items: center;
+ margin-top: 40px;
 }
 .year-details.active {
-  display: flex;
-  animation: fadeIn .5s;
+ display: flex;
+ animation: fadeIn .5s;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+ from { opacity: 0; transform: translateY(20px); }
+ to { opacity: 1; transform: translateY(0); }
 }
 .events-line {
-  width: 3px;
-  background: #0072bb55;
-  height: 100%;
-  margin-bottom: 20px;
+ width: 3px;
+ background: #0072bb55;
+ height: 100%;
+ margin-bottom: 20px;
 }
 .event {
-  width: 300px;
-  padding: 16px;
-  background: #f9f9f9;
-  margin: 20px 0;
-  border-left: 6px solid #0072bb;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 5px 12px rgba(0,0,0,.06);
-  transition: .25s;
-  position: relative;
+ width: 300px;
+ padding: 16px;
+ background: #f9f9f9;
+ margin: 20px 0;
+ border-left: 6px solid #0072bb;
+ border-radius: 10px;
+ cursor: pointer;
+ box-shadow: 0 5px 12px rgba(0,0,0,.06);
+ transition: .25s;
+ position: relative;
 }
 .event:hover { transform: translateY(-4px); }
 .event .date {
-  color: #7cc242;
-  font-weight: 600;
+ color: #7cc242;
+ font-weight: 600;
 }
 /* Controles admin */
 .admin-tools {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-  justify-content: flex-end;
+ display: flex;
+ gap: 6px;
+ margin-top: 10px;
+ justify-content: flex-end;
 }
 .icon-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  transition: transform 0.15s ease;
-  opacity: 0.9;
+ width: 26px;
+ height: 26px;
+ border-radius: 50%;
+ border: none;
+ cursor: pointer;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 13px;
+ box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+ transition: transform 0.15s ease;
+ opacity: 0.9;
 }
 .icon-btn:hover {
-  transform: translateY(-1px);
-  opacity: 1;
+ transform: translateY(-1px);
+ opacity: 1;
 }
 .icon-edit { background: #0072bb; color:white; }
 .icon-delete { background:#e84545; color:white; }
 /* Botón panel lateral */
 #openPanelBtn {
-  position: fixed;
-  top: 25px;
-  right: 25px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  color: white;
-  font-size: 28px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #0072bb, #7cc242);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.20);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: .15s;
-  z-index: 999;
+ position: fixed;
+ top: 25px;
+ right: 25px;
+ width: 52px;
+ height: 52px;
+ border-radius: 50%;
+ border: none;
+ cursor: pointer;
+ color: white;
+ font-size: 28px;
+ font-weight: 600;
+ background: linear-gradient(135deg, #0072bb, #7cc242);
+ box-shadow: 0 4px 10px rgba(0,0,0,0.20);
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ transition: .15s;
+ z-index: 999;
 }
 #openPanelBtn:hover {
-  transform: scale(1.09);
+ transform: scale(1.09);
 }
 /* Panel lateral */
 #sidePanel {
-  position: fixed;
-  right: -400px;
-  top: 0;
-  width: 340px;
-  height: 100vh;
-  background: #ffffffee;
-  backdrop-filter: blur(6px);
-  box-shadow: -3px 0 10px rgba(0,0,0,.1);
-  padding: 20px;
-  transition: .4s;
-  z-index: 1000;
+ position: fixed;
+ right: -400px;
+ top: 0;
+ width: 340px;
+ height: 100vh;
+ background: #ffffffee;
+ backdrop-filter: blur(6px);
+ box-shadow: -3px 0 10px rgba(0,0,0,.1);
+ padding: 20px;
+ transition: .4s;
+ z-index: 1000;
 }
 #sidePanel.open { right: 0; }
 #closePanel {
-  position:absolute;
-  top:12px;
-  right:15px;
-  font-size:22px;
-  cursor:pointer;
-  color:#0072bb;
-  font-weight:600;
+ position:absolute;
+ top:12px;
+ right:15px;
+ font-size:22px;
+ cursor:pointer;
+ color:#0072bb;
+ font-weight:600;
 }
 #sidePanel input,
 #sidePanel textarea,
 #sidePanel select {
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+ width: 100%;
+ margin-bottom: 12px;
+ padding: 10px;
+ border-radius: 8px;
+ border: 1px solid #ccc;
 }
 #sidePanel button {
-  width: 100%;
-  padding: 12px;
-  background: #0072bb;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
+ width: 100%;
+ padding: 12px;
+ background: #0072bb;
+ color: white;
+ border: none;
+ cursor: pointer;
+ border-radius: 8px;
 }
 /* Modal */
 #modal {
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,.5);
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
+ display:none;
+ position:fixed;
+ top:0; left:0;
+ width:100%; height:100%;
+ background: rgba(0,0,0,.5);
+ justify-content:center;
+ align-items:center;
+ z-index:2000;
 }
 #modalContent {
-  width: 360px;
-  background:white;
-  padding:22px;
-  border-radius:12px;
+ width: 360px;
+ background:white;
+ padding:22px;
+ border-radius:12px;
+}
+/* ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+  PANEL COMPLETO DE TABLA DE HITOS  (AGREGADO)
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ */
+#tableViewPanel {
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100vh;
+ background: #ffffffee;
+ backdrop-filter: blur(8px);
+ padding: 30px;
+ display: none;
+ flex-direction: column;
+ z-index: 4000;
+ overflow-y: auto;
+}
+#closeTableView {
+ position: absolute;
+ top: 20px;
+ right: 30px;
+ font-size: 30px;
+ cursor: pointer;
+ color: #0072bb;
+ font-weight: 700;
+}
+#tableContainer {
+ margin-top: 20px;
+ background: white;
+ padding: 15px;
+ border-radius: 10px;
+ max-height: 80vh;
+ overflow-y: auto;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+#hitosTable {
+ width: 100%;
+ border-collapse: collapse;
+}
+#hitosTable th, #hitosTable td {
+ padding: 8px;
+ border-bottom: 1px solid #ddd;
+}
+#downloadXLSX {
+ padding: 10px 20px;
+ background: #0072bb;
+ color: white;
+ border: none;
+ border-radius: 6px;
+ cursor: pointer;
+ margin-bottom: 15px;
 }
 </style>
+<!-- █████ AGREGADO: Librería XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
  
  <body>
 <button id="logoutBtn" class="logout-btn">← Salir</button>
- 
+ <!-- Botón para ver la tabla completa de hitos -->
+<button id="openTableViewBtn" 
+        style="position:fixed; top:90px; right:25px; z-index:1200;
+               background:#0072bb; color:white; border:none; 
+               border-radius:8px; padding:10px 14px; cursor:pointer;">
+  📄 Ver Tabla
+</button>
 <!-- Botón de descarga de reporte -->
 <button id="downloadReportBtn" class="logout-btn" style="left:auto; right:22px; top:90px; background:#0072bb;">
   Descargar reporte
@@ -788,6 +849,87 @@ if ("serviceWorker" in navigator) {
       .catch(err => console.log("Error SW:", err));
   });
 }
+ /* ▬▬▬▬▬▬▬▬▬ PANEL DE TABLA DE HITOS ▬▬▬▬▬▬▬▬▬ */
+ 
+const tablePanel = document.getElementById("tableViewPanel");
+const openTableBtn = document.getElementById("openTableViewBtn");
+const closeTableBtn = document.getElementById("closeTableView");
+const tableBody = document.querySelector("#hitosTable tbody");
+const downloadXLSXBtn = document.getElementById("downloadXLSX");
+ 
+openTableBtn.onclick = async () => {
+    tablePanel.style.display = "flex";
+    await cargarTablaHitos();
+};
+ 
+closeTableBtn.onclick = () => {
+    tablePanel.style.display = "none";
+};
+ 
+/* Cargar la tabla con todos los hitos */
+async function cargarTablaHitos() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.values) return;
+ 
+    const rows = data.values.slice(1);
+ 
+    tableBody.innerHTML = "";
+ 
+    rows.forEach(r => {
+        const tr = document.createElement("tr");
+        r.forEach(col => {
+            const td = document.createElement("td");
+            td.textContent = col || "";
+            tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+    });
+}
+ 
+/* Descargar Excel */
+downloadXLSXBtn.onclick = async () => {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+ 
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data.values);
+ 
+    XLSX.utils.book_append_sheet(wb, ws, "Hitos");
+ 
+    XLSX.writeFile(wb, "hitos_camino_gdc.xlsx");
+};
 </script>
+  <!-- ▬▬▬▬▬ PANEL COMPLETO DE TABLA DE HITOS ▬▬▬▬▬ -->
+<div id="tableViewPanel">
+ 
+  <div id="closeTableView">✖</div>
+ 
+  <h2>Listado Completo de Hitos</h2>
+ 
+  <button id="downloadXLSX">📥 Descargar Excel</button>
+ 
+  <div id="tableContainer">
+<table id="hitosTable">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Título</th>
+<th>Detalle</th>
+<th>Descripción</th>
+<th>Tipo</th>
+<th>Impacto</th>
+<th>Autor</th>
+<th>ID</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+ 
+</div>
+
 </body>
 </html>
